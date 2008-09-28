@@ -1,0 +1,41 @@
+#! /bin/sh
+
+XTERM_EXE='xterm'
+XTERM_EXEC_OPTION='-e'
+XTERM_COMMAND=''
+
+SCREEN_OPTIONS='-m -U'
+
+DEBUG_CMD=''
+
+test $# -gt 0 -a -z "$1" && shift
+
+while true
+do
+  case "$1" in
+    -su)
+    shift
+    unset ZDOTDIR
+    cd /root &&
+    SCREEN_OPTIONS="$SCREEN_OPTIONS -l"
+    XTERM_COMMAND="sudo -H env DISPLAY=$DISPLAY"
+    ;;
+    -t)
+    shift
+    XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
+    shift
+    ;;
+    -d)
+    shift
+    DEBUG_CMD=1
+    ;;
+    *)
+    break
+    ;;
+  esac
+done
+
+test "$DEBUG_CMD" && set -x
+exec $XTERM_EXE $XTERM_OPTIONS $XTERM_EXEC_OPTION $XTERM_COMMAND screen $SCREEN_OPTIONS "$@"
+
+# vim: shiftwidth=2

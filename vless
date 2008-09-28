@@ -1,0 +1,12 @@
+#! /bin/sh
+
+export VLESS_OPT=-F
+
+if [ $# -eq 0 ]
+then
+  exec view -u ~/.vim/rc.less -
+else
+  exec view -u ~/.vim/rc.less "$@"
+fi
+
+# vim: filetype=sh sw=2
