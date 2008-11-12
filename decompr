@@ -73,7 +73,7 @@ tbz.name = 'tbz'
 tbz.cmd << '--use=bzip2'
 tbz.extensions = ['tar.bz2', 'tbz2', 'tbz']
 
-svz.cmd = '7zr'
+svz.cmd = '7z'
 
 zip.cmd = 'unzip'
 
