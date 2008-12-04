@@ -1,0 +1,60 @@
+#! /usr/bin/env ruby
+
+SAVE_CURSOR = '7'
+RESTORE_CURSOR = '8'
+ERASE_CURSOR2EOL = '[2K'
+
+STDOUT.sync = true
+
+lines = []
+
+du = IO.popen("du -xh --exclude='./.?*' --max-depth=1 #{ARGV.join(' ')}")
+
+DU_BLOCK_SIZES = {
+  'K' => 1024,
+  'M' => 1024*1024,
+  'G' => 1024*1024*1024,
+}
+
+DUEntry = Struct.new(:path, :size, :block_size)
+
+class DUEntry
+
+  def <=>(e)
+
+    (size * DU_BLOCK_SIZES[block_size]) <=> (e.size * DU_BLOCK_SIZES[e.block_size])
+
+  end
+
+  def to_s
+
+    '%5u%s %s' % [ size, block_size, path ]
+
+  end
+
+end
+
+print SAVE_CURSOR if STDOUT.tty?
+
+while line = du.gets
+
+  line.chomp!
+
+  unless line =~ /^(\d+(\.\d+)?)([KMG])\s+(.*)$/
+    STDERR.puts "line doesn't match: #{line}"
+    next
+  end
+
+  line = DUEntry.new($4, $1.to_f, $3)
+
+  lines << line
+
+  print RESTORE_CURSOR, ERASE_CURSOR2EOL, line if STDOUT.tty?
+
+end
+
+print RESTORE_CURSOR if STDOUT.tty?
+
+lines.sort!
+lines.each { |l| puts l }
+
