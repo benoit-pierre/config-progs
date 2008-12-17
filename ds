@@ -11,6 +11,7 @@ lines = []
 du = IO.popen("du -xh --exclude='./.?*' --max-depth=1 #{ARGV.join(' ')}")
 
 DU_BLOCK_SIZES = {
+  ' ' => 1,
   'K' => 1024,
   'M' => 1024*1024,
   'G' => 1024*1024*1024,
@@ -40,12 +41,12 @@ while line = du.gets
 
   line.chomp!
 
-  unless line =~ /^(\d+(\.\d+)?)([KMG])\s+(.*)$/
+  unless line =~ /^(\d+(\.\d+)?)([KMG])?\s+(.*)$/
     STDERR.puts "line doesn't match: #{line}"
     next
   end
 
-  line = DUEntry.new($4, $1.to_f, $3)
+  line = DUEntry.new($4, $1.to_f, $3 ? $3 : ' ')
 
   lines << line
 
