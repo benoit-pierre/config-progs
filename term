@@ -1,6 +1,7 @@
 #! /bin/sh
 
 XTERM_EXE='xterm'
+XTERM_OPTIONS=''
 XTERM_EXEC_OPTION='-e'
 XTERM_COMMAND=''
 
@@ -13,6 +14,17 @@ test $# -gt 0 -a -z "$1" && shift
 while true
 do
   case "$1" in
+    -h)
+    shift
+    XTERM_OPTIONS="$XTERM_OPTIONS -hold"
+    ;;
+    -ssh)
+    shift
+    XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
+    XTERM_COMMAND="ssh -t $1"
+    SCREEN_OPTIONS="-RR"
+    shift
+    ;;
     -su)
     shift
     unset ZDOTDIR
