@@ -11,7 +11,7 @@ lines = []
 du = IO.popen("du -xh --exclude='./.?*' --max-depth=1 #{ARGV.join(' ')}")
 
 DU_BLOCK_SIZES = {
-  ' ' => 1,
+  ''  => 1,
   'K' => 1024,
   'M' => 1024*1024,
   'G' => 1024*1024*1024,
@@ -21,21 +21,29 @@ DUEntry = Struct.new(:path, :size, :block_size)
 
 class DUEntry
 
-  def <=>(e)
+  def real_size
 
-    (size * DU_BLOCK_SIZES[block_size]) <=> (e.size * DU_BLOCK_SIZES[e.block_size])
+    size * DU_BLOCK_SIZES[block_size]
 
   end
 
-  def to_s
+  def <=>(e)
 
-    '%5u%s %s' % [ size, block_size, path ]
+    self.real_size <=> e.real_size
+
+  end
+
+  def to_s(align = 0)
+
+    '%*u%s %s' % [ align, size, block_size, path ]
 
   end
 
 end
 
 print SAVE_CURSOR if STDOUT.tty?
+
+align = 0
 
 while line = du.gets
 
@@ -46,16 +54,21 @@ while line = du.gets
     next
   end
 
-  line = DUEntry.new($4, $1.to_f, $3 ? $3 : ' ')
+  line = DUEntry.new($4, $1.to_f, $3 ? $3 : '')
 
   lines << line
 
-  print RESTORE_CURSOR, ERASE_CURSOR2EOL, line if STDOUT.tty?
+  if line.size > 0
+    line_align = Math.log10(line.size).ceil
+    align = line_align if line_align > align
+  end
+
+  print RESTORE_CURSOR, ERASE_CURSOR2EOL, line.to_s(align) if STDOUT.tty?
 
 end
 
 print RESTORE_CURSOR if STDOUT.tty?
 
 lines.sort!
-lines.each { |l| puts l }
+lines.each { |l| puts l.to_s(align) }
 
