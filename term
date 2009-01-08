@@ -32,6 +32,12 @@ do
     SCREEN_OPTIONS="$SCREEN_OPTIONS -l"
     XTERM_COMMAND="sudo -H env DISPLAY=$DISPLAY"
     ;;
+    -rc)
+    shift
+    SCREEN_OPTIONS="$SCREEN_OPTIONS -c $HOME/.screen/rc.d/$1"
+    XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
+    shift
+    ;;
     -t)
     shift
     XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
