@@ -8,7 +8,18 @@ STDOUT.sync = true
 
 lines = []
 
-du = IO.popen("du -xh --exclude='./.?*' --max-depth=1 #{ARGV.join(' ')}")
+rd, wr = IO.pipe
+
+pid = fork {
+
+  rd.close
+  STDOUT.reopen(wr)
+
+  exec('du', '-xh', '--exclude=./.?*', '--max-depth=1', *ARGV)
+  exit 255
+}
+
+wr.close
 
 DU_BLOCK_SIZES = {
   ''  => 1,
@@ -45,7 +56,7 @@ print SAVE_CURSOR if STDOUT.tty?
 
 align = 0
 
-while line = du.gets
+while line = rd.gets
 
   line.chomp!
 
