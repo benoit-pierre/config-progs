@@ -210,7 +210,7 @@ ARGV.each { |dir|
 
     dir, file = File.split(path)
 
-    (groups[dir] ||= []) << file
+    ((groups[dir] ||= {})[$1] ||= []) << file
   }
 }
 
@@ -218,11 +218,15 @@ puts groups if $DEBUG
 
 groups = groups.to_a
 groups.sort!
-groups.each { |dir, files|
+groups.each do |dir, files|
 
-  files.sort!
+  files.values.each do |files|
 
-  gains(dir, dry_run, *files)
-}
+    files.sort!
+
+    gains(dir, dry_run, *files)
+
+  end
+end
 
 # vim: sw=2
