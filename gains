@@ -177,9 +177,9 @@ def gains(dir, dry_run, *files)
   Dir.chdir(dir)
 
   if Gain.method("has_#{type}gain?").call(*files)
-    puts "skip #{dir}"
+    puts "skip #{dir} [#{type}]"
   else
-    puts "gains #{dir}"
+    puts "gains #{dir} [#{type}]"
     Gain.method("#{type}gain").call(*files) unless dry_run
   end
 
