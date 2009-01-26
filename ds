@@ -78,7 +78,7 @@ while line = rd.gets
 
 end
 
-print RESTORE_CURSOR if STDOUT.tty?
+print RESTORE_CURSOR, ERASE_CURSOR2EOL if STDOUT.tty?
 
 lines.sort!
 lines.each { |l| puts l.to_s(align) }
