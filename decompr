@@ -27,6 +27,7 @@ begin
     ARCHIVE_TYPES = {
       'application/x-bzip2' => 'tbz2',
       'application/x-gzip' => 'tgz',
+      'application/x-lha' => 'lzh',
       'application/x-rar' => 'rar',
       'application/zip' => 'zip',
     }
@@ -48,6 +49,7 @@ end
 Archiver = Struct.new(:name , :cmd, :dir, :extract, :keep, :list, :overwrite, :pipe, :quiet , :test, :verbose, :extensions)
 
 ace = Archiver.new(   'ace' , nil , nil , '-x'    , nil  , '-t' , '-o+'     , '-p' , nil    , 't'  , '-v'    , ['ace'])
+lha = Archiver.new(   'lha' , nil , nil , '-x'    , nil  , '-l' , 'f'       , '-p' , nil    , 't'  , 'v'     , ['lzh'])
 rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'lt' , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar', 'cbr'])
 svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-so', '-bd'  , 't'  , nil     , ['7z'])
 tar = Archiver.new(   'tar' , nil , nil , '-x'    , '-k' , '-t' , nil       , '-O' , nil    , '-t' , '-v'    , ['tar'])
@@ -75,6 +77,13 @@ tbz.extensions = ['tar.bz2', 'tbz2', 'tbz']
 svz.cmd = '7z'
 
 zip.cmd = 'unzip'
+
+lha.cmd = 'lha'
+
+def lha.command(options, file)
+  options.sort!
+  [cmd, options.join(''), file]
+end
 
 option =
 {
