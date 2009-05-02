@@ -48,11 +48,11 @@ end
 
 Archiver = Struct.new(:name , :cmd, :dir, :extract, :keep, :list, :overwrite, :pipe, :quiet , :test, :verbose, :extensions)
 
-svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-so', '-bd'  , 't'  , nil     , ['7z'])
 ace = Archiver.new(   'ace' , nil , nil , '-x'    , nil  , '-t' , '-o+'     , '-p' , nil    , 't'  , '-v'    , ['ace'])
 rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'lt' , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar', 'cbr'])
-zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip', 'cbz', 'jar', 'pk3'])
+svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-so', '-bd'  , 't'  , nil     , ['7z'])
 tar = Archiver.new(   'tar' , nil , nil , '-x'    , '-k' , '-t' , nil       , '-O' , nil    , '-t' , '-v'    , ['tar'])
+zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip', 'cbz', 'jar', 'pk3'])
 
 [tar, tgz = tar.dup, tbz = tar.dup].each\
 {
