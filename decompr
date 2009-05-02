@@ -21,20 +21,19 @@ begin
 
   require 'mahoro'
 
-  mahoro = Mahoro.new
+  mahoro = Mahoro.new(Mahoro::MIME)
   mahoro.extend(Module.new do
+
+    ARCHIVE_TYPES = {
+      'application/x-bzip2' => 'tbz2',
+      'application/x-gzip' => 'tgz',
+      'application/x-rar' => 'rar',
+      'application/zip' => 'zip',
+    }
 
     def guess_archive_type(file)
 
-      case self.file(file)
-
-      when /^RAR archive data,/
-      'rar'
-      when /^Zip archive data,/
-      'zip'
-      else
-      nil
-      end
+      ARCHIVE_TYPES.fetch(self.file(file), nil)
 
     end
 
@@ -195,7 +194,11 @@ while args.size > 0
 
   else
 
-    if true #unless mahoro
+    ext = nil
+
+    ext = mahoro.guess_archive_type(arg) if mahoro
+
+    unless ext
 
       arg =~ /\.((tar\.)?[^.]+)$/
 
@@ -204,13 +207,11 @@ while args.size > 0
           next
         end
 
-      archiver = extensions.fetch($1.downcase)
-
-    else
-
-      archiver = extensions.fetch(mahoro.guess_archive_type(arg))
+      ext = $1.downcase
 
     end
+
+    archiver = extensions.fetch(ext)
 
     archive = File.expand_path(arg)
 
