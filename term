@@ -28,8 +28,7 @@ do
     -su)
       shift
       unset ZDOTDIR
-      cd /root &&
-        SCREEN_OPTIONS+=-l
+      SCREEN_OPTIONS+=(-c ~root/.screen/rc.d/sudo)
       XTERM_COMMAND=(sudo -H env DISPLAY="$DISPLAY")
       XTERM_OPTIONS+=(-title screen-sudo)
       ;;
