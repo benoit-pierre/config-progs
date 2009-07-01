@@ -1,11 +1,11 @@
-#! /bin/sh
+#! /bin/zsh
 
 XTERM_EXE='xterm'
-XTERM_OPTIONS=''
+XTERM_OPTIONS=()
 XTERM_EXEC_OPTION='-e'
-XTERM_COMMAND=''
+XTERM_COMMAND=()
 
-SCREEN_OPTIONS='-m -U'
+SCREEN_OPTIONS=(-m -U)
 
 DEBUG_CMD=''
 
@@ -15,46 +15,46 @@ while true
 do
   case "$1" in
     -h)
-    shift
-    XTERM_OPTIONS="$XTERM_OPTIONS -hold"
-    ;;
+      shift
+      XTERM_OPTIONS+=-hold
+      ;;
     -ssh)
-    shift
-    XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
-    XTERM_COMMAND="ssh -t $1"
-    SCREEN_OPTIONS="-RR"
-    shift
-    ;;
+      shift
+      XTERM_OPTIONS+=(-title "$1")
+      XTERM_COMMAND=(ssh -t "$1")
+      SCREEN_OPTIONS+=-RR
+      shift
+      ;;
     -su)
-    shift
-    unset ZDOTDIR
-    cd /root &&
-    SCREEN_OPTIONS="$SCREEN_OPTIONS -l"
-    XTERM_COMMAND="sudo -H env DISPLAY=$DISPLAY"
-    XTERM_OPTIONS="$XTERM_OPTIONS -title screen-sudo"
-    ;;
+      shift
+      unset ZDOTDIR
+      cd /root &&
+        SCREEN_OPTIONS+=-l
+      XTERM_COMMAND=(sudo -H env DISPLAY="$DISPLAY")
+      XTERM_OPTIONS+=(-title screen-sudo)
+      ;;
     -rc)
-    shift
-    SCREEN_OPTIONS="$SCREEN_OPTIONS -c $HOME/.screen/rc.d/$1"
-    XTERM_OPTIONS="$XTERM_OPTIONS -title screen-$1"
-    shift
-    ;;
-  -nw)
-    shift
-    XTERM_OPTIONS="$XTERM_OPTIONS +wf"
-    ;;
+      shift
+      SCREEN_OPTIONS+=(-c "$HOME/.screen/rc.d/$1")
+      XTERM_OPTIONS+=(-title "screen-$1")
+      shift
+      ;;
+    -nw)
+      shift
+      XTERM_OPTIONS+=(+wf)
+      ;;
     -t)
-    shift
-    XTERM_OPTIONS="$XTERM_OPTIONS -title $1"
-    shift
-    ;;
+      shift
+      XTERM_OPTIONS+=(-title "$1")
+      shift
+      ;;
     -d)
-    shift
-    DEBUG_CMD=1
-    ;;
+      shift
+      DEBUG_CMD=1
+      ;;
     *)
-    break
-    ;;
+      break
+      ;;
   esac
 done
 
