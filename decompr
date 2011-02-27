@@ -25,6 +25,7 @@ begin
   mahoro.extend(Module.new do
 
     ARCHIVE_TYPES = {
+      'application/x-7z-compressed' => '7z',
       'application/x-bzip2' => 'tbz2',
       'application/x-gzip' => 'tgz',
       'application/x-lha' => 'lzh',
