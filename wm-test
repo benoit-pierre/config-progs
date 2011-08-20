@@ -1,0 +1,157 @@
+#! /usr/bin/env python
+
+import subprocess
+import struct
+import signal
+import time
+import sys
+import os
+
+
+xsession_debug = True
+
+
+class SigException():
+
+    def __init__(self, signum):
+        self.signum = signum
+
+
+def xsession_sighandler(signum, frame):
+    if xsession_debug:
+        if signal.SIGUSR1 == signum:
+            signame = 'SIGUSR1'
+        elif signal.SIGUSR2 == signum:
+            signame = 'SIGUSR2'
+        elif signal.SIGCHLD == signum:
+            signame = 'SIGCHLD'
+        elif signal.SIGCONT == signum:
+            signame = 'SIGCONT'
+        else:
+            signame = str(signum)
+        print 'xsession_sighandler(' + signame + ')'
+    raise SigException(signum)
+
+
+signal.signal(signal.SIGUSR1, xsession_sighandler)
+signal.signal(signal.SIGUSR2, xsession_sighandler)
+
+xephyr_display = ':2'
+xephyr_pid = os.fork()
+if 0 == xephyr_pid:
+    # This will make the xserver send us a SIGUSR1 when ready.
+    signal.signal(signal.SIGUSR1, signal.SIG_IGN)
+    os.execlp('Xephyr', 'Xephyr',
+              '-ac', xephyr_display,
+              '+xinerama',
+              '-screen', '1024x768',
+              # '-origin', '512,0', '-screen', '512x768',
+              # '-screen', '1024x768',
+              '-keybd', 'ephyr,,,xkbmodel=evdev,xkblayout=us',
+              '-noreset')
+
+xsession_signum = None
+
+try:
+
+    # Wait for xserver to be ready.
+
+    if xsession_debug:
+        print 'waiting for xserver to be ready'
+
+    try:
+        signal.pause()
+    except SigException, e:
+        assert signal.SIGUSR1 == e.signum
+
+    if xsession_debug:
+        print 'xserver ready'
+
+    os.environ['DISPLAY'] = xephyr_display
+
+    os.system('xrdb -merge ~/.x11/Xresources.d/xterm')
+
+    if xsession_debug:
+        print 'starting dbus'
+
+    dbus_cmd = ['dbus-launch', '--binary-syntax']
+    dbus = subprocess.Popen(dbus_cmd, stdout=subprocess.PIPE)
+    dbus_env = dbus.communicate()[0]
+    ulong_size = struct.calcsize('L')
+    uint_size = struct.calcsize('I')
+    dbus_pid, = struct.unpack('I', dbus_env[-(ulong_size+uint_size):-ulong_size])
+    dbus_xid, = struct.unpack('L', dbus_env[-ulong_size:])
+    dbus_address = dbus_env[:-(ulong_size+ulong_size+1)]
+
+    if xsession_debug:
+        print 'dbus_pid:', dbus_pid
+        print 'dbus_xid:', dbus_xid
+        print 'dbus_address:', dbus_address
+
+    try:
+
+        xsession_pid = os.getpid()
+        os.environ['XSESSION_PID'] = str(xsession_pid)
+        os.environ['DBUS_SESSION_BUS_ADDRESS'] = dbus_address
+
+        if xsession_debug:
+            print 'xsession_pid:', xsession_pid
+
+        signal.signal(signal.SIGCHLD, xsession_sighandler)
+        signal.signal(signal.SIGCONT, xsession_sighandler)
+
+        wm_args = sys.argv[1:]
+        if 0 == len(wm_args):
+            wm_args = [ 'xterm' ]
+
+        if xsession_debug:
+            print 'starting wm:', ' '.join(wm_args)
+
+        wm_pid = os.fork()
+        if 0 == wm_pid:
+            os.execvp(wm_args[0], wm_args)
+
+        if xsession_debug:
+            print 'wm_pid:', wm_pid
+
+        try:
+
+            while True:
+                try:
+                    signal.pause()
+                except SigException, e:
+                    if signal.SIGCHLD == e.signum or \
+                       signal.SIGCONT == e.signum:
+                        break
+                    xsession_signum = e.signum
+        finally:
+
+            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
+            signal.signal(signal.SIGCONT, signal.SIG_DFL)
+
+            if xsession_debug:
+                print 'waiting for wm termination'
+
+            os.waitpid(wm_pid, 0)
+
+    finally:
+
+        if xsession_debug:
+            print 'killing dbus'
+
+        os.kill(dbus_pid, signal.SIGTERM)
+
+finally:
+
+    if xsession_debug:
+        print 'killing xserver'
+
+    os.kill(xephyr_pid, signal.SIGTERM)
+    os.waitpid(xephyr_pid, 0)
+
+    if xsession_debug:
+        if signal.SIGUSR1 == xsession_signum:
+            print 'wm asked for reboot'
+        elif signal.SIGUSR2 == xsession_signum:
+            print 'wm asked for halt'
+
