@@ -52,14 +52,19 @@ xephyr_pid = os.fork()
 if 0 == xephyr_pid:
     # This will make the xserver send us a SIGUSR1 when ready.
     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
-    os.execlp('Xephyr', 'Xephyr',
-              '-ac', xephyr_display,
-              '+xinerama',
-              '-screen', '1024x768',
-              # '-origin', '512,0', '-screen', '512x768',
-              # '-screen', '1024x768',
-              '-keybd', 'ephyr,,,xkbmodel=evdev,xkblayout=us',
-              '-noreset')
+    xephyr_cmd = [
+        'Xephyr', 'Xephyr',
+        '-ac', xephyr_display,
+        '+xinerama',
+        '-screen', '1024x768',
+        # '-origin', '512,0', '-screen', '512x768',
+        # '-screen', '1024x768',
+        '-keybd', 'ephyr,,,xkbmodel=evdev,xkblayout=us',
+        '-noreset'
+    ]
+    if xsession_debug:
+        print 'starting xephyr:', ' '.join(xephyr_cmd)
+    os.execlp(*xephyr_cmd)
 
 xsession_signum = None
 
