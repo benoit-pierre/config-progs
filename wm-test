@@ -77,6 +77,8 @@ try:
 
     try:
         signal.pause()
+    except KeyboardInterrupt:
+        sys.exit(0)
     except SigException, e:
         assert signal.SIGUSR1 == e.signum
 
