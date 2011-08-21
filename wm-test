@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 
 import subprocess
+import optparse
 import struct
 import signal
 import time
@@ -8,7 +9,17 @@ import sys
 import os
 
 
-xsession_debug = True
+parser = optparse.OptionParser()
+parser.add_option('-D', '--display',
+                  dest='display', metavar='DISPLAY', default=':2',
+                  help='X11 display ID to use')
+parser.add_option('-d', '--debug',
+                  action='store_true', dest='debug', default=False,
+                  help='enable debug traces')
+
+(options, args) = parser.parse_args()
+
+xsession_debug = options.debug
 
 
 class SigException():
@@ -36,7 +47,7 @@ def xsession_sighandler(signum, frame):
 signal.signal(signal.SIGUSR1, xsession_sighandler)
 signal.signal(signal.SIGUSR2, xsession_sighandler)
 
-xephyr_display = ':2'
+xephyr_display = options.display
 xephyr_pid = os.fork()
 if 0 == xephyr_pid:
     # This will make the xserver send us a SIGUSR1 when ready.
@@ -100,7 +111,7 @@ try:
         signal.signal(signal.SIGCHLD, xsession_sighandler)
         signal.signal(signal.SIGCONT, xsession_sighandler)
 
-        wm_args = sys.argv[1:]
+        wm_args = args[:]
         if 0 == len(wm_args):
             wm_args = [ 'xterm' ]
 
