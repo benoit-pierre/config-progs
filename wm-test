@@ -110,7 +110,6 @@ if 0 == xephyr_pid:
         'Xephyr', 'Xephyr',
         '-ac', xephyr_display,
         '+xinerama',
-        '-keybd', 'ephyr,,,xkbmodel=evdev,xkblayout=us',
         '-noreset'
     ]
     screens = display_geometry_to_screens(*options.geometry)
@@ -141,6 +140,8 @@ try:
 
     if xsession_debug:
         print 'xserver ready'
+
+    os.system('setxkbmap -print | xkbcomp -w0 - %s' % xephyr_display)
 
     os.environ['DISPLAY'] = xephyr_display
 
