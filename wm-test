@@ -4,14 +4,29 @@ import subprocess
 import optparse
 import struct
 import signal
+import copy
 import time
 import sys
+import re
 import os
 
 
-parser = optparse.OptionParser()
+def check_display(option, opt, value):
+    m = re.match('^\d+$', value)
+    if not m:
+        raise optparse.OptionValueError('invalid display ID: %s' % value)
+    return int(m.group(0))
+
+class Option(optparse.Option):
+
+    TYPES = optparse.Option.TYPES + ('display',)
+    TYPE_CHECKER = copy.copy(optparse.Option.TYPE_CHECKER)
+    TYPE_CHECKER['display'] = check_display
+
+
+parser = optparse.OptionParser(option_class=Option)
 parser.add_option('-D', '--display',
-                  dest='display', metavar='DISPLAY', default=':2',
+                  dest='display', metavar='DISPLAY', default=2, type='display',
                   help='X11 display ID to use')
 parser.add_option('-d', '--debug',
                   action='store_true', dest='debug', default=False,
@@ -47,7 +62,7 @@ def xsession_sighandler(signum, frame):
 signal.signal(signal.SIGUSR1, xsession_sighandler)
 signal.signal(signal.SIGUSR2, xsession_sighandler)
 
-xephyr_display = options.display
+xephyr_display = ':%u' % options.display
 xephyr_pid = os.fork()
 if 0 == xephyr_pid:
     # This will make the xserver send us a SIGUSR1 when ready.
