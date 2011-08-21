@@ -152,6 +152,8 @@ try:
             while True:
                 try:
                     signal.pause()
+                except KeyboardInterrupt:
+                    sys.exit(0)
                 except SigException, e:
                     if signal.SIGCHLD == e.signum or \
                        signal.SIGCONT == e.signum:
