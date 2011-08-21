@@ -17,22 +17,38 @@ def check_display(option, opt, value):
         raise optparse.OptionValueError('invalid display ID: %s' % value)
     return int(m.group(0))
 
+def check_geometry(option, opt, value):
+    m = re.match('^(\d+)x(\d+)(:(\d+)x(\d+))?$', value)
+    if not m:
+        raise optparse.OptionValueError('invalid display geometry: %s' % value)
+    width, height = int(m.group(1)), int(m.group(2))
+    if m.group(3):
+        horizontal_screens, vertical_screens = int(m.group(4)), int(m.group(5))
+    else:
+        horizontal_screens, vertical_screens = 1, 1
+    return (width, height, horizontal_screens, vertical_screens)
+
 class Option(optparse.Option):
 
-    TYPES = optparse.Option.TYPES + ('display',)
+    TYPES = optparse.Option.TYPES + ('display', 'geometry',)
     TYPE_CHECKER = copy.copy(optparse.Option.TYPE_CHECKER)
     TYPE_CHECKER['display'] = check_display
+    TYPE_CHECKER['geometry'] = check_geometry
 
 
 parser = optparse.OptionParser(option_class=Option)
 parser.add_option('-D', '--display',
                   dest='display', metavar='DISPLAY', default=2, type='display',
                   help='X11 display ID to use')
+parser.add_option('-g', '--geometry',
+                  dest='geometry', metavar='WxH[:WxH]', default='1024x768', type='geometry',
+                  help='display geometry: total width/height (pixels), width/height (screens, optional, default to 1x1)')
 parser.add_option('-d', '--debug',
                   action='store_true', dest='debug', default=False,
                   help='enable debug traces')
 
 (options, args) = parser.parse_args()
+
 
 xsession_debug = options.debug
 
@@ -62,6 +78,29 @@ def xsession_sighandler(signum, frame):
 signal.signal(signal.SIGUSR1, xsession_sighandler)
 signal.signal(signal.SIGUSR2, xsession_sighandler)
 
+
+def dim_split(dim, num):
+    step = dim / num
+    values = []
+    for d in range(num - 1):
+        values.append(step)
+        dim -= step
+    values.append(dim)
+    return values
+
+def display_geometry_to_screens(display_width, display_height,
+                                horizontal_screens, vertical_screens):
+    screens_widths = dim_split(display_width, horizontal_screens)
+    screens_heights = dim_split(display_height, vertical_screens)
+    screens = []
+    x, y = 0, 0
+    for w in screens_widths:
+        for h in screens_heights:
+            screens.append((x, y, w, h))
+            y = (y + h) % display_height
+        x = (x + w) % display_width
+    return screens
+
 xephyr_display = ':%u' % options.display
 xephyr_pid = os.fork()
 if 0 == xephyr_pid:
@@ -71,12 +110,15 @@ if 0 == xephyr_pid:
         'Xephyr', 'Xephyr',
         '-ac', xephyr_display,
         '+xinerama',
-        '-screen', '1024x768',
-        # '-origin', '512,0', '-screen', '512x768',
-        # '-screen', '1024x768',
         '-keybd', 'ephyr,,,xkbmodel=evdev,xkblayout=us',
         '-noreset'
     ]
+    screens = display_geometry_to_screens(*options.geometry)
+    for x, y, w, h in screens:
+        xephyr_cmd.extend([
+            '-origin', '%u,%u' % (x, y),
+            '-screen', '%ux%u' % (w, h),
+        ])
     if xsession_debug:
         print 'starting xephyr:', ' '.join(xephyr_cmd)
     os.execlp(*xephyr_cmd)
