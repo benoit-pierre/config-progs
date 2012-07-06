@@ -21,11 +21,9 @@ halt()
   cs_action Stop
 }
 
-[ -n "$1" -a -z "$2" ] || exit 1
-
 case "$1" in
   -r) reboot ;;
-  -h) halt ;;
+  -h|'') halt ;;
   *) exit 2 ;;
 esac
 
