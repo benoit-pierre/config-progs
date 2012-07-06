@@ -141,11 +141,11 @@ try:
     if xsession_debug:
         print 'xserver ready'
 
-    os.system('setxkbmap -print | xkbcomp -w0 - %s' % xephyr_display)
-
     os.environ['DISPLAY'] = xephyr_display
 
     os.system('xrdb -merge ~/.x11/Xresources.d/xterm')
+
+    os.system('setxkbd')
 
     if xsession_debug:
         print 'starting dbus'
