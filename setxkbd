@@ -17,7 +17,7 @@ setxkbd()
   setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print | xkbcomp -w0 -I"$HOME/.x11/xkb" ${id:+-i "$id"} - "$DISPLAY"
 }
 
-setxkbd general '' bpierre,bpierre colemak,us compose:rwin,grp:sclk_toggle
+setxkbd general '' bpierre colemak compose:rwin
 
 xinput list |
 # ⎡ Virtual core pointer                          id=2    [master pointer  (3)]
