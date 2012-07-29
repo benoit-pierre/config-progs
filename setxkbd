@@ -3,6 +3,28 @@
 # X11 keyboard configuration.
 
 verbose=0
+test_loop=0
+lang='colemak'
+
+while [ 0 -ne $# ]
+do
+  case "$1" in
+    -v)
+      verbose=1
+      ;;
+    -t)
+      test_loop=1
+      ;;
+    -*)
+      echo 2>&1 "setxkbd: unsupported option: $1"
+      exit 1
+      ;;
+    *)
+      lang="$1"
+      ;;
+  esac
+  shift
+done
 
 setxkbd()
 {
@@ -12,12 +34,12 @@ setxkbd()
   variant="$4"
   options="$5"
 
-  [ 0 -ne $verbose ] && printf '%2u [%-40s]: %s|%s|%s\n' "$id" "$type" "$layout" "$variant" "$options"
+  [ 0 -ne $verbose ] && printf 'setxkbd: %2u [%-40s]: %s|%s|%s\n' "$id" "$type" "$layout" "$variant" "$options"
 
   setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print | xkbcomp -w0 -I"$HOME/.x11/xkb" ${id:+-i "$id"} - "$DISPLAY"
 }
 
-setxkbd general '' bpierre colemak compose:rwin
+setxkbd general '' bpierre "$lang" compose:rwin
 
 xinput list |
 # ⎡ Virtual core pointer                          id=2    [master pointer  (3)]
@@ -41,10 +63,10 @@ do
     'Virtual core XTEST')
       ;;
     'TypeMatrix.com'*)
-      setxkbd "$type" "$id" bpierre colemak_typematrix
+      setxkbd "$type" "$id" bpierre "$lang"_typematrix
       ;;
     'Xephyr virtual')
-      setxkbd "$type" "$id" bpierre colemak compose:rwin
+      setxkbd "$type" "$id" bpierre "$lang" compose:rwin
       ;;
     *)
       ;;
@@ -60,4 +82,10 @@ xkbset repeatkeys 66
 # Enable sticky keys.
 xkbset exp 1 \=sticky \=twokey \=latchlock
 xkbset sticky -twokey -latchlock
+
+if [ 0 -ne $test_loop ]
+then
+  xmodmap -pm &&
+  xev | sed -n '/^Key\(Press\|Release\)/{:_loop;N;/\n$/!b_loop;p;}'
+fi
 
