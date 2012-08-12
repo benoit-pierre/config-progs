@@ -86,6 +86,6 @@ xkbset sticky -twokey -latchlock
 if [ 0 -ne $test_loop ]
 then
   xmodmap -pm &&
-  xev | sed -n '/^Key\(Press\|Release\)/{:_loop;N;/\n$/!b_loop;p;}'
+  xev | sed -n '/^Key\(Press\|Release\)/{:_loop;p;n;/\n$/!b_loop;}'
 fi
 
