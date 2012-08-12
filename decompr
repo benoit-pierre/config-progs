@@ -30,6 +30,7 @@ begin
       'application/x-gzip' => 'tgz',
       'application/x-lha' => 'lzh',
       'application/x-rar' => 'rar',
+      'application/x-xz' => 'tbxz',
       'application/zip' => 'zip',
     }
 
@@ -56,7 +57,7 @@ svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-
 tar = Archiver.new(   'tar' , nil , nil , '-x'    , '-k' , '-t' , nil       , '-O' , nil    , '-t' , '-v'    , ['tar'])
 zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip', 'cbz', 'jar', 'pk3'])
 
-[tar, tgz = tar.dup, tbz = tar.dup].each\
+[tar, tgz = tar.dup, tbz = tar.dup, tbxz = tar.dup].each\
 {
   |a|
 
@@ -68,12 +69,16 @@ zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-
 }
 
 tgz.name = 'tgz'
-tgz.cmd << '--use=gzip'
+tgz.cmd << '--gzip'
 tgz.extensions = ['tar.gz', 'tar.z', 'tgz']
 
 tbz.name = 'tbz'
-tbz.cmd << '--use=bzip2'
+tbz.cmd << '--bzip2'
 tbz.extensions = ['tar.bz2', 'tbz2', 'tbz']
+
+tbxz.name = 'tbxz'
+tbxz.cmd << '--xz'
+tbxz.extensions = ['tar.xz']
 
 svz.cmd = '7z'
 
