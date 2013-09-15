@@ -76,7 +76,7 @@ done
 # Keyboard auto-repeat:
 # - on and fast
 # - enabled for capslock too
-xkbset repeatkeys rate 240 14
+xkbset repeatkeys rate 280 14
 xkbset repeatkeys 66
 
 # Enable sticky keys.
