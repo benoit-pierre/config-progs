@@ -83,6 +83,8 @@ xkbset repeatkeys 66
 xkbset exp 1 \=sticky \=twokey \=latchlock
 xkbset sticky -twokey -latchlock
 
+numlockx off
+
 if [ 0 -ne $test_loop ]
 then
   xmodmap -pm &&
