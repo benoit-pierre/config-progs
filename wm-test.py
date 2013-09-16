@@ -65,10 +65,6 @@ def xsession_sighandler(signum, frame):
             signame = 'SIGUSR1'
         elif signal.SIGUSR2 == signum:
             signame = 'SIGUSR2'
-        elif signal.SIGCHLD == signum:
-            signame = 'SIGCHLD'
-        elif signal.SIGCONT == signum:
-            signame = 'SIGCONT'
         else:
             signame = str(signum)
         print 'xsession_sighandler(' + signame + ')'
@@ -173,9 +169,6 @@ try:
         if xsession_debug:
             print 'xsession_pid:', xsession_pid
 
-        signal.signal(signal.SIGCHLD, xsession_sighandler)
-        signal.signal(signal.SIGCONT, xsession_sighandler)
-
         wm_args = args[:]
         if 0 == len(wm_args):
             wm_args = [ 'xterm' ]
@@ -190,27 +183,17 @@ try:
         if xsession_debug:
             print 'wm_pid:', wm_pid
 
-        try:
+        while True:
+            try:
+                os.waitpid(wm_pid, 0)
+                break
+            except KeyboardInterrupt:
+                sys.exit(0)
+            except SigException, e:
+                xsession_signum = e.signum
 
-            while True:
-                try:
-                    signal.pause()
-                except KeyboardInterrupt:
-                    sys.exit(0)
-                except SigException, e:
-                    if signal.SIGCHLD == e.signum or \
-                       signal.SIGCONT == e.signum:
-                        break
-                    xsession_signum = e.signum
-        finally:
-
-            signal.signal(signal.SIGCHLD, signal.SIG_DFL)
-            signal.signal(signal.SIGCONT, signal.SIG_DFL)
-
-            if xsession_debug:
-                print 'waiting for wm termination'
-
-            os.waitpid(wm_pid, 0)
+        if xsession_debug:
+            print 'wm terminated'
 
     finally:
 
