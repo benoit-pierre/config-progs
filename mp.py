@@ -101,6 +101,8 @@ class MPV(Player):
 
     def _get_play_cmd(self):
         cmd = [ 'mpv' ]
+        if self._options.profile is not None:
+            cmd.append('--profile=%s' % self._options.profile)
         if not sys.stdout.isatty():
             cmd.append('--msglevel=cache=3:statusline=3')
         if self._options.verbose:
@@ -121,6 +123,8 @@ class MPlayer(Player):
 
     def _get_play_cmd(self):
         cmd = [ 'mplayer' ]
+        if self._options.profile is not None:
+            cmd.extend(['-profile', self._options.profile])
         if not sys.stdout.isatty():
             cmd.extend(['-msglevel', 'cache=3:statusline=3'])
         if self._options.verbose:
@@ -143,6 +147,8 @@ parser.add_argument('-d', '--debug',
 
 if 'mp-play' == MP_PROG:
 
+    parser.add_argument('--profile',
+                        help='select the specified configuration profile')
     parser.add_argument('-v', '--verbose',
                         action='store_true', default=False,
                         help='enable verbose mode')
