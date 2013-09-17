@@ -51,6 +51,8 @@ class Player:
 
                 cmd = self._get_play_cmd()
                 cmd.insert(1, MP_PROG)
+                if self._options.player_options is not None:
+                    cmd.extend(self._options.player_options)
                 cmd.append('--')
                 cmd.extend(self._options.files)
 
@@ -147,6 +149,9 @@ parser.add_argument('-d', '--debug',
 
 if 'mp-play' == MP_PROG:
 
+    parser.add_argument('--option',
+                        metavar='OPTION', action='append', dest='player_options',
+                        help='add an option to be passed to the underlying player')
     parser.add_argument('--profile',
                         help='select the specified configuration profile')
     parser.add_argument('-v', '--verbose',
