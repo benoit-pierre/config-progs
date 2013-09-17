@@ -2,6 +2,8 @@
 
 
 import ConfigParser as configparser
+import subprocess
+import mimetypes
 import argparse
 import sys
 import os
@@ -24,8 +26,15 @@ def unlink_if_exists(file):
 
 class Player:
 
+    _SUBDOWNLOADERS = (
+        'periscope',
+        'subberthehut',
+        'subdownloader',
+    )
+
     def __init__(self, options):
         self._options = options
+        self._dev_null = open('/dev/null', 'w')
 
     def _get_input_file(self, pid):
         return '%s/input-%u' % (MP_DIR, pid)
@@ -41,7 +50,125 @@ class Player:
             dbg('nvperf', mode)
         nvperf(mode, verbose=self._options.verbose)
 
+    def _is_video(self, file):
+        ''' Check if file is a video file. '''
+        mimetypes.init()
+        type, encoding = mimetypes.guess_type(file)
+        if type is None:
+            return False
+        return type.startswith('video/')
+
+    def _need_subtitles(self, file):
+        ''' Do we need subtitles for this file? '''
+        directory = os.path.dirname(os.path.realpath(file))
+        if '/' != directory[-1]:
+            directory += '/'
+        for path in self._options.fetch_subtitles:
+            if '/' != path[-1]:
+                path += '/'
+            if directory.startswith(path):
+                return True
+        return False
+
+    def _has_subtitles(self, file):
+        ''' Check if subtitles for the specified file exists. '''
+        file_name, file_ext = os.path.splitext(os.path.basename(file))
+        for entry in os.listdir(os.path.dirname(os.path.abspath(file))):
+            name, ext = os.path.splitext(entry)
+            if '.srt' != ext.lower():
+                continue
+            if name.lower() == file_name.lower():
+                return True
+        return False
+
+    def _call_subtitles_downloader(self, cmd):
+        if self._options.debug:
+            dbg('cmd', cmd)
+        if self._options.debug:
+            stdout = sys.stdout
+            stderr = sys.stderr
+        else:
+            stdout = self._dev_null
+            stderr = subprocess.STDOUT
+        try:
+            return subprocess.call(cmd, stdout=stdout, stderr=stderr)
+        except OSError, e:
+            if self._options.debug:
+                dbg('exception', e)
+            return -1
+
+    def _fetch_subtitles_periscope(self, file):
+        cmd = [
+            'periscope',
+            '--language', self._options.subtitles_language,
+            '--quiet',
+            file,
+        ]
+        return 0 == self._call_subtitles_downloader(cmd)
+
+    def _fetch_subtitles_subberthehut(self, file):
+        cmd = [
+            'subberthehut',
+            '--lang', self._options.subtitles_language,
+            '--hash-search-only',
+            '--never-ask',
+            '--same-name',
+            '--quiet',
+            file,
+        ]
+        return 0 == self._call_subtitles_downloader(cmd)
+
+    def _fetch_subtitles_subdownloader(self, file):
+        cmd = [
+            'subdownloader',
+            '--lang', self._options.subtitles_language,
+            '--video', os.path.abspath(file),
+            '--rename-subs',
+            '--cli', '-D',
+        ]
+        if 0 != self._call_subtitles_downloader(cmd):
+            return False
+        # Need to check ourself if subtitles were found since subdownloader
+        # error code does not indicate it.
+        return self._has_subtitles(file)
+
+    def _fetch_subtitles(self):
+
+        if 0 == len(self._options.fetch_subtitles):
+            return
+
+        mimetypes.init()
+
+        for fname in self._options.files:
+
+            if not os.path.exists(fname):
+                continue
+
+            if not self._is_video(fname):
+                continue
+
+            if not self._need_subtitles(fname):
+                continue
+
+            if self._has_subtitles(fname):
+                continue
+
+            if self._options.debug or self._options.verbose:
+                msg('fetching subtitles for %s' % fname)
+
+            for downloader in self._SUBDOWNLOADERS:
+                if self._options.debug or self._options.verbose:
+                    msg('trying with %s' % downloader)
+                fn = getattr(self, '_fetch_subtitles_' + downloader)
+                if fn(fname):
+                    break
+            else:
+                if self._options.debug or self._options.verbose:
+                    msg('no subtitles were found')
+
     def play(self):
+
+        self._fetch_subtitles()
 
         cleanup = []
 
@@ -159,6 +286,12 @@ parser.add_argument('-d', '--debug',
 
 if 'mp-play' == MP_PROG:
 
+    parser.add_argument('--fetch-subtitles',
+                        metavar='LOCATION', action='append',
+                        help='automatically fetch subtitles for files in the specified location')
+    parser.add_argument('--subtitles-language',
+                        metavar='LANGUAGE', default='en',
+                        help='language to use when fetching subtitles')
     parser.add_argument('--use-nvperf',
                         action='store_true', default=False,
                         help='use nvperf to switch to maximum performance during play')
