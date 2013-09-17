@@ -251,7 +251,7 @@ while args.size > 0
 
     system(*cmd)
 
-    code |= $?
+    code |= $? >> 8
 
     options = default_options.dup
 
