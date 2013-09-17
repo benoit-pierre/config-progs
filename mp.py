@@ -35,11 +35,21 @@ class Player:
                 'import sys; input = open(sys.argv[1], "r+");\nwhile True:\n sys.stdout.write(input.readline())',
                 self._input_file ]
 
+    def _nvperf(self, mode):
+        from nvperf import nvperf
+        if self._options.debug:
+            dbg('nvperf', mode)
+        nvperf(mode, verbose=self._options.verbose)
+
     def play(self):
 
         cleanup = []
 
         try:
+
+            if self._options.use_nvperf:
+                self._nvperf('+')
+                cleanup.append(lambda: self._nvperf('-'))
 
             mp_pid = os.fork()
             if 0 == mp_pid:
@@ -149,6 +159,9 @@ parser.add_argument('-d', '--debug',
 
 if 'mp-play' == MP_PROG:
 
+    parser.add_argument('--use-nvperf',
+                        action='store_true', default=False,
+                        help='use nvperf to switch to maximum performance during play')
     parser.add_argument('--option',
                         metavar='OPTION', action='append', dest='player_options',
                         help='add an option to be passed to the underlying player')
