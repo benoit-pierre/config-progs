@@ -236,6 +236,7 @@ class MPV(Player):
     _commands = {
         'pause': 'set pause yes',
         'resume': 'set pause no',
+        'show-progress': 'show_progress',
     }
 
     def _get_play_cmd(self):
@@ -258,6 +259,7 @@ class MPlayer(Player):
     _commands = {
         'pause': 'pausing_keep_force pause',
         'resume': 'seek +0',
+        'show-progress': 'osd_show_progression',
     }
 
     def _get_play_cmd(self):
@@ -309,7 +311,7 @@ if 'mp-play' == MP_PROG:
 elif 'mp-control' == MP_PROG:
 
     parser.add_argument('pid', type=int, help='PID of the player to control')
-    parser.add_argument('cmd', choices=['pause', 'resume'], help='command to send to player')
+    parser.add_argument('cmd', choices=['pause', 'resume', 'show-progress'], help='command to send to player')
 
 else:
     print >>sys.stderr, 'invalid mode: %s' % MP_PROG
