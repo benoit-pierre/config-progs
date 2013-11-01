@@ -1,7 +1,6 @@
 #! /usr/bin/env python2
 
 
-import traceback
 import argparse
 import readline
 import inspect
