@@ -1,6 +1,7 @@
 #! /usr/bin/env python2
 
 
+import subprocess
 import argparse
 import readline
 import inspect
@@ -524,6 +525,14 @@ exec 'Program Files/Steam/steam.exe' # -applaunch 0000
 
         old_dir = self._dir
         self.cmd_cd(PREFIX_DIR)
+
+        self.cmd_exec('wineboot', '--init')
+
+        # Fix "My Documents" link...
+        mydocs_dir = os.path.join(prefix_path, 'drive_c/users', os.environ['USER'], 'My Documents')
+        documents_dir = subprocess.check_output(['xdg-user-dir', 'DOCUMENTS'])[:-1]
+        os.unlink(mydocs_dir)
+        os.symlink(documents_dir, mydocs_dir)
 
         reg_defaults = os.path.join(WINE_DIR, 'defaults.reg')
         if os.path.exists(reg_defaults):
