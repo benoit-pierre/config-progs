@@ -236,6 +236,7 @@ class Whelp:
         self._environ = {}
         self._dir = None
         self._dry_run = False
+        self._script_args = []
 
         # Don't isolate winetricks installations in their own prefix.
         self._environ['WINETRICKS_OPT_SHAREDPREFIX'] = '1'
@@ -295,9 +296,12 @@ class Whelp:
     def run(self, *args):
 
         try:
-            options = self._parser.parse_args()
+            options, args = self._parser.parse_known_args()
         except SystemExit, e:
             return e.code
+
+        if len(args) > 0 and not options.script:
+            print >>sys.stderr, 'whelp: error: unrecognized arguments:', ' '.join(args)
 
         if options.help:
             self._parser.print_help()
@@ -326,6 +330,8 @@ class Whelp:
                options.execute or \
                options.interactive:
                 self._dry_run = True
+
+            self._script_args = args
 
             for line in open(options.script):
                 try:
@@ -427,14 +433,23 @@ class Whelp:
         print 'cd', self._dir
         os.chdir(self._dir)
 
+    def _expand_exec_args(self, args):
+        for a in args:
+            if '$@' == a:
+                for a in self._script_args:
+                    yield a
+            else:
+                yield a
+
     def cmd_exec(self, cmd, *args):
         ''' Execute a command. '''
         if self._dry_run:
             return
         self.cmd_cd(self._dir)
+        args = [a for a in self._expand_exec_args(args)]
         ext = os.path.splitext(cmd)[1]
         if ext is not None and '.exe' == ext.lower():
-            args = [cmd] + list(args)
+            args.insert(0, cmd)
             cmd = 'wine'
         print 'exec', cmd, ' '.join(args)
         self._wine.execute(cmd, args, env=self._environ)
