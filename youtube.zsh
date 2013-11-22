@@ -19,6 +19,12 @@ cmd_run()
 player_smplayer()
 {
   case "$1" in
+    240p)
+      quality='small'
+      ;;
+    360p)
+      quality='medium'
+      ;;
     480p)
       quality='large'
       ;;
@@ -37,6 +43,12 @@ player_smplayer()
 player_youtube_viewer()
 {
   case "$1" in
+    240p)
+      quality=2
+      ;;
+    360p)
+      quality=3
+      ;;
     480p)
       quality=4
       ;;
@@ -105,7 +117,7 @@ do
   if [ -n "$video" ]
   then
     case "$quality" in
-      480p|720p|1080p)
+      240p|360p|480p|720p|1080p)
         ;;
       sd)
         quality='480p'
