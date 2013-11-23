@@ -36,7 +36,7 @@ setxkbd()
 
   [ 0 -ne $verbose ] && printf 'setxkbd: %2u [%-40s]: %s|%s|%s\n' "$id" "$type" "$layout" "$variant" "$options"
 
-  setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print | xkbcomp -w0 -I"$HOME/.x11/xkb" ${id:+-i "$id"} - "$DISPLAY"
+  setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print | xkbcomp -w0 -I"${XDG_CONFIG_HOME:-$HOME/.config}/x11/xkb" ${id:+-i "$id"} - "$DISPLAY"
 }
 
 setxkbd general '' bpierre "$lang" compose:rwin
