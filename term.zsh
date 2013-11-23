@@ -9,12 +9,12 @@ XTERM_MPLEX='auto'
 
 SCREEN_EXE=screen
 SCREEN_COMMAND=''
-SCREEN_RCDIR="$HOME/.screen/rc.d"
+SCREEN_RCDIR="${XDG_CONFIG_HOME:-$HOME/.config}/screen/rc.d"
 unset STY
 
 TMUX_EXE=tmux
 TMUX_COMMAND=''
-TMUX_RCDIR="$HOME/.tmux/rc.d"
+TMUX_RCDIR="${XDG_CONFIG_HOME:-$HOME/.config}/tmux/rc.d"
 unset TMUX TMUX_PANE
 
 DEBUG_CMD=''
