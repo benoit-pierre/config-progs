@@ -289,7 +289,7 @@ parser.add_argument('-d', '--debug',
 if 'mp-play' == MP_PROG:
 
     parser.add_argument('--fetch-subtitles',
-                        metavar='LOCATION', action='append',
+                        metavar='LOCATION', action='append', default=[],
                         help='automatically fetch subtitles for files in the specified location')
     parser.add_argument('--subtitles-language',
                         metavar='LANGUAGE', default='en',
