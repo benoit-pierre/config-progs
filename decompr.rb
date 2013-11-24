@@ -52,7 +52,7 @@ Archiver = Struct.new(:name , :cmd, :dir, :extract, :keep, :list, :overwrite, :p
 
 ace = Archiver.new(   'ace' , nil , nil , '-x'    , nil  , '-t' , '-o+'     , '-p' , nil    , 't'  , '-v'    , ['ace'])
 lha = Archiver.new(   'lha' , nil , nil , '-x'    , nil  , '-l' , 'f'       , '-p' , nil    , 't'  , 'v'     , ['lzh'])
-rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'lt' , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar', 'cbr'])
+rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'l'  , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar', 'cbr'])
 svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-so', '-bd'  , 't'  , nil     , ['7z'])
 tar = Archiver.new(   'tar' , nil , nil , '-x'    , '-k' , '-t' , nil       , '-O' , nil    , '-t' , '-v'    , ['tar'])
 zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip', 'cbz', 'jar', 'pk3'])
@@ -79,6 +79,8 @@ tbz.extensions = ['tar.bz2', 'tbz2', 'tbz']
 tbxz.name = 'tbxz'
 tbxz.cmd << '--xz'
 tbxz.extensions = ['tar.xz']
+
+rar.cmd = 'unrar'
 
 svz.cmd = '7z'
 
