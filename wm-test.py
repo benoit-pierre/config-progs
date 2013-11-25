@@ -137,11 +137,13 @@ try:
     if xsession_debug:
         print 'xserver ready'
 
+    os.system('xrdb -query | xrdb -load -display %s -' % xephyr_display)
+
+    # Ugly hack... using xkbcomp only work after a least one keypress...
+    os.system('xdotool key space')
+    os.system('xkbcomp %s %s' % (os.environ['DISPLAY'], xephyr_display))
+
     os.environ['DISPLAY'] = xephyr_display
-
-    os.system('xrdb -merge ~/.x11/Xresources.d/xterm')
-
-    os.system('setxkbd')
 
     if xsession_debug:
         print 'starting dbus'
