@@ -10,7 +10,7 @@ import os
 
 
 MP_PROG = os.path.basename(sys.argv[0])
-MP_DIR = os.path.expanduser('~/.mp')
+MP_DIR = '%s/mp' % os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.config'))
 
 
 def msg(msg):
