@@ -1,6 +1,6 @@
 #! /bin/sh
 
-dry_run=0
+dry_run="${SHUTDOWN_DRYRUN-0}"
 mode=''
 
 run()
