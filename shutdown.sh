@@ -13,15 +13,24 @@ run()
   fi
 }
 
+# DBus helper.
+dbus()
+{
+  dest="$1"
+  obj="/`echo "$1$2" | tr . /`"
+  if="$1$2.$3"
+
+  run dbus-send \
+  --system --print-reply \
+  --dest="$dest" \
+  "$obj" "$if"
+}
+
 # ConsoleKit support. {{{
 
 cs_action()
 {
-  run dbus-send \
-  --system --dest=org.freedesktop.ConsoleKit \
-  --type=method_call --print-reply --reply-timeout=2000 \
-  /org/freedesktop/ConsoleKit/Manager \
-  "org.freedesktop.ConsoleKit.Manager.$1"
+  dbus org.freedesktop.ConsoleKit .Manager "$1"
 }
 
 cs_reboot()
@@ -36,7 +45,6 @@ cs_halt()
 
 # }}}
 
-
 # systemd support. {{{
 
 sd_reboot()
@@ -47,6 +55,25 @@ sd_reboot()
 sd_halt()
 {
   run systemctl poweroff
+}
+
+# }}}
+
+# suspend/hibernate support. {{{
+
+pm_action()
+{
+  dbus org.freedesktop.UPower '' "$1"
+}
+
+suspend()
+{
+  pm_action Suspend
+}
+
+hibernate()
+{
+  pm_action Hibernate
 }
 
 # }}}
@@ -66,6 +93,14 @@ case "$1" in
   -r)
   echo 'rebooting'
     "$mode"_reboot
+    ;;
+  -s)
+    echo 'suspending'
+    suspend
+    ;;
+  -S)
+    echo 'hibernating'
+    hibernate
     ;;
   *)
     exit 2
