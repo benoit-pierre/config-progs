@@ -91,14 +91,14 @@ CMD=($XTERM_EXE $XTERM_OPTIONS $XTERM_EXEC_OPTION $XTERM_COMMAND)
 
 case "$XTERM_MPLEX" in
   screen)
-    if [ 0 -ne $# ]
+    if [[ 0 -ne $# ]]
     then
       SCREEN_COMMAND=''
     fi
     CMD+=($SCREEN_EXE $SCREEN_COMMAND "$@")
     ;;
   tmux)
-    if [ 0 -ne $# ]
+    if [[ 0 -ne $# ]]
     then
       TMUX_COMMAND=new-session
     fi
