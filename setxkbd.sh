@@ -78,6 +78,7 @@ done
 # - enabled for capslock too
 xkbset repeatkeys rate 280 14
 xkbset repeatkeys 66
+xkbset repeatkeys 22
 
 # Enable sticky keys.
 xkbset exp 1 \=sticky \=twokey \=latchlock
