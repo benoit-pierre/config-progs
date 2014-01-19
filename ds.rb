@@ -1,4 +1,4 @@
-#! /usr/bin/env ruby
+#!/usr/bin/env ruby
 
 SAVE_CURSOR = '7'
 RESTORE_CURSOR = '8'

@@ -1,4 +1,4 @@
-#! /bin/zsh
+#!/bin/zsh
 
 XTERM_EXE='xterm'
 XTERM_OPTIONS=(+wf)

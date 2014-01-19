@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 # X11 keyboard configuration.
 

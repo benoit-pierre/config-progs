@@ -1,4 +1,4 @@
-#! /usr/bin/env ruby
+#!/usr/bin/env ruby
 #
 # Copyright (C) 2008 Benoit Pierre <benoit.pierre@gmail.com>
 #

@@ -1,4 +1,4 @@
-#! /bin/zsh
+#!/bin/zsh
 
 dry_run=0
 quality='720p'

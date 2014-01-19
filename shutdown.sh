@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 dry_run="${SHUTDOWN_DRYRUN-0}"
 mode=''
