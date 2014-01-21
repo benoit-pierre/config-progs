@@ -17,34 +17,27 @@
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-begin
+ARCHIVE_TYPES = {
+  'application/jar' => 'zip',
+  'application/x-7z-compressed' => '7z',
+  'application/x-bzip2' => 'tbz2',
+  'application/x-gzip' => 'tgz',
+  'application/x-lha' => 'lzh',
+  'application/x-rar' => 'rar',
+  'application/x-xz' => 'tbxz',
+  'application/zip' => 'zip',
+}
 
-  require 'mahoro'
+def guess_archive_type(file)
 
-  mahoro = Mahoro.new(Mahoro::MIME)
-  mahoro.extend(Module.new do
+  IO.popen(['file', '--mime-type', '--brief', file]) do |io|
 
-    ARCHIVE_TYPES = {
-      'application/x-7z-compressed' => '7z',
-      'application/x-bzip2' => 'tbz2',
-      'application/x-gzip' => 'tgz',
-      'application/x-lha' => 'lzh',
-      'application/x-rar' => 'rar',
-      'application/x-xz' => 'tbxz',
-      'application/zip' => 'zip',
-    }
+    mime = io.read
+    mime.chomp!
 
-    def guess_archive_type(file)
+    ARCHIVE_TYPES[mime]
 
-      ARCHIVE_TYPES.fetch(self.file(file), nil)
-
-    end
-
-  end)
-
-rescue LoadError
-
-  mahoro = nil
+  end
 
 end
 
@@ -52,10 +45,10 @@ Archiver = Struct.new(:name , :cmd, :dir, :extract, :keep, :list, :overwrite, :p
 
 ace = Archiver.new(   'ace' , nil , nil , '-x'    , nil  , '-t' , '-o+'     , '-p' , nil    , 't'  , '-v'    , ['ace'])
 lha = Archiver.new(   'lha' , nil , nil , '-x'    , nil  , '-l' , 'f'       , '-p' , nil    , 't'  , 'v'     , ['lzh'])
-rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'l'  , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar', 'cbr'])
+rar = Archiver.new(   'rar' , nil , nil , 'x'     , '-o-', 'l'  , '-o+'     , 'p'  , nil    , 't'  , '-v'    , ['rar'])
 svz = Archiver.new(   '7z'  , nil , nil , 'x'     , nil  , 'l'  , nil       , '-so', '-bd'  , 't'  , nil     , ['7z'])
 tar = Archiver.new(   'tar' , nil , nil , '-x'    , '-k' , '-t' , nil       , '-O' , nil    , '-t' , '-v'    , ['tar'])
-zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip', 'cbz', 'jar', 'pk3'])
+zip = Archiver.new(   'zip' , nil , nil , '-x'    , '-n' , '-l' , '-o'      , '-p' , nil    , '-t' , nil     , ['zip'])
 
 [tar, tgz = tar.dup, tbz = tar.dup, tbxz = tar.dup].each\
 {
@@ -211,22 +204,7 @@ while args.size > 0
 
   else
 
-    ext = nil
-
-    ext = mahoro.guess_archive_type(arg) if mahoro
-
-    unless ext
-
-      arg =~ /\.((tar\.)?[^.]+)$/
-
-        unless $1
-          raise "unknown file format `#{arg}'"
-          next
-        end
-
-      ext = $1.downcase
-
-    end
+    ext = guess_archive_type(arg)
 
     archiver = extensions.fetch(ext)
 
