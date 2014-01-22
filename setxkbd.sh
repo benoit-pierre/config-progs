@@ -33,10 +33,13 @@ setxkbd()
   layout="$3"
   variant="$4"
   options="$5"
+  xkbdir="${XDG_CONFIG_HOME:-$HOME/.config}/x11/xkb"
 
   [ 0 -ne $verbose ] && printf 'setxkbd: %2u [%-40s]: %s|%s|%s\n' "$id" "$type" "$layout" "$variant" "$options"
 
-  setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print | xkbcomp -w0 -I"${XDG_CONFIG_HOME:-$HOME/.config}/x11/xkb" ${id:+-i "$id"} - "$DISPLAY"
+  setxkbmap -layout "$layout" -variant "$variant" -option -option "$options" -print |
+  sed 's/"pc+\(.*\)+inet(evdev)\([^"]*\)"\s*};$/"pc+inet(evdev)+\1\2" };/' |
+  xkbcomp -w0 -I"$xkbdir" ${id:+-i "$id"} - "$DISPLAY"
 }
 
 setxkbd general '' bpierre "$lang" compose:rwin
