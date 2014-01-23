@@ -26,11 +26,25 @@ def unlink_if_exists(file):
 
 class Player:
 
+    _klasses = {}
+
     _SUBDOWNLOADERS = (
         'periscope',
         'subberthehut',
         'subdownloader',
     )
+
+    @staticmethod
+    def from_name(name, options):
+        klass = Player._klasses[name]
+        player = klass(options)
+        return player
+
+    @staticmethod
+    def from_pid(pid, options):
+        name = os.readlink('/proc/%u/exe' % pid)
+        name = os.path.basename(name)
+        return Player.from_name(name, options)
 
     def __init__(self, options):
         self._options = options
@@ -230,6 +244,8 @@ class Player:
 
         return 0
 
+Player._klasses['dummy'] = Player
+
 
 class MPV(Player):
 
@@ -252,6 +268,8 @@ class MPV(Player):
 
     def _get_control_cmd(self):
         return self._commands[self._options.cmd]
+
+Player._klasses['mpv'] = MPV
 
 
 class MPlayer(Player):
@@ -276,18 +294,20 @@ class MPlayer(Player):
     def _get_control_cmd(self):
         return self._commands[self._options.cmd]
 
+Player._klasses['mplayer'] = MPlayer
+
 
 parser = argparse.ArgumentParser(prog=MP_PROG)
 
-parser.add_argument('-p', '--player',
-                    choices=['mpv', 'mplayer', 'dummy'], default='mpv',
-                    help='select player to use')
 parser.add_argument('-d', '--debug',
                     action='store_true', default=False,
                     help='enable debug traces')
 
 if 'mp-play' == MP_PROG:
 
+    parser.add_argument('-p', '--player',
+                        choices=Player._klasses.keys(), default='mpv',
+                        help='select player to use')
     parser.add_argument('--fetch-subtitles',
                         metavar='LOCATION', action='append', default=[],
                         help='automatically fetch subtitles for files in the specified location')
@@ -344,17 +364,11 @@ if options.debug:
     dbg('args', args)
     dbg('options', options)
 
-klass = {
-    'mpv': MPV,
-    'mplayer': MPlayer,
-    'dummy': Player,
-}[options.player]
-
-player = klass(options)
-
 if 'mp-play' == MP_PROG:
+    player = Player.from_name(options.player, options)
     ret = player.play()
 elif 'mp-control' == MP_PROG:
+    player = Player.from_pid(options.pid, options)
     ret = player.control()
 
 sys.exit(ret)
