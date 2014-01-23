@@ -15,7 +15,10 @@ pid = fork {
   rd.close
   STDOUT.reopen(wr)
 
-  exec('du', '-xh', '--exclude=./.?*', '--max-depth=1', *ARGV)
+  cmd = ['du', '-xh', '--exclude=./.?*', '--max-depth=1']
+  cmd << '-c' if ARGV.size > 1
+  cmd.concat(ARGV)
+  exec(*cmd)
   exit 255
 }
 
