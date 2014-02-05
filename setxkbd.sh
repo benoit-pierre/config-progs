@@ -72,6 +72,7 @@ do
       setxkbd "$type" "$id" bpierre "$lang" compose:rwin
       ;;
     *)
+      [ 0 -ne $verbose ] && echo "ignoring device: $type"
       ;;
   esac
 done
