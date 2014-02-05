@@ -77,6 +77,9 @@ do
   esac
 done
 
+# Ugly hack... otherwise keymaps are not always taken into account...
+xdotool keyup space
+
 # Keyboard auto-repeat:
 # - on and fast
 # - enabled for capslock too
