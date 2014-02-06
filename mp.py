@@ -43,6 +43,8 @@ class Player:
     @staticmethod
     def from_pid(pid, options):
         name = os.readlink('/proc/%u/exe' % pid)
+        if name.endswith(' (deleted)'):
+            name = name[:-10]
         name = os.path.basename(name)
         return Player.from_name(name, options)
 
