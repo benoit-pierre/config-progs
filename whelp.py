@@ -489,7 +489,7 @@ class Whelp:
         script_path = os.path.join(SCRIPT_DIR, options.name)
 
         script_template = '''\
-#! /usr/bin/env whelp
+#!/usr/bin/env whelp
 
 set arch $arch
 set prefix $prefix
