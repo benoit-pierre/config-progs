@@ -68,7 +68,7 @@ module Gain
 
   def self.mp3gain(*files)
 
-    system('mp3gain', '-a', '-k', *files)
+    system('mp3gain', '-s', 'r', '-a', '-k', *files)
 
   end
 
@@ -162,7 +162,7 @@ module Gain
 
 end
 
-def gains(dir, dry_run, *files)
+def gains(dir, dry_run, force, *files)
 
   f = files[0]
 
@@ -176,7 +176,7 @@ def gains(dir, dry_run, *files)
   cwd = Dir.pwd
   Dir.chdir(dir)
 
-  if Gain.method("has_#{type}gain?").call(*files)
+  if not force and Gain.method("has_#{type}gain?").call(*files)
     puts "skip #{dir} [#{type}]"
   else
     puts "gains #{dir} [#{type}]"
@@ -188,11 +188,17 @@ def gains(dir, dry_run, *files)
 end
 
 dry_run = false
+force = false
 
 puts ARGV if $DEBUG
 
 if '-n' == ARGV[0]
   dry_run = true
+  ARGV.shift
+end
+
+if '-f' == ARGV[0]
+  force = true
   ARGV.shift
 end
 
@@ -224,7 +230,7 @@ groups.each do |dir, files|
 
     files.sort!
 
-    gains(dir, dry_run, *files)
+    gains(dir, dry_run, force, *files)
 
   end
 end
