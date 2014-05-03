@@ -123,9 +123,9 @@ ObjectSpace.each_object(Archiver)\
 {
   |a|
 
-   a.cmd ||= a.name.to_s
-   archivers[a.name] = a
-   a.extensions.each { |ext| extensions[ext] = a }
+  a.cmd ||= a.name.to_s
+  archivers[a.name] = a
+  a.extensions.each { |ext| extensions[ext] = a }
 }
 
 exclude =
