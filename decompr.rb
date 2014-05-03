@@ -71,7 +71,7 @@ tbz.extensions = ['tar.bz2', 'tbz2', 'tbz']
 
 tbxz.name = 'tbxz'
 tbxz.cmd << '--xz'
-tbxz.extensions = ['tar.xz']
+tbxz.extensions = ['tar.xz', 'tbxz']
 
 rar.cmd = 'unrar'
 
