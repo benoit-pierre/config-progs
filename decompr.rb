@@ -18,6 +18,7 @@
 #
 
 ARCHIVE_TYPES = {
+  'application/java-archive' => 'zip',
   'application/jar' => 'zip',
   'application/x-7z-compressed' => '7z',
   'application/x-bzip2' => 'tbz2',
