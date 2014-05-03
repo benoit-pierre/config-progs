@@ -98,8 +98,18 @@ do
       echo 1>&2 "invalid option: $1"
       exit 1
       ;;
+    http://*)
+      # Fallthrough...
+      ;&
+    https://*)
+      # Fallthrough...
+      ;&
     youtube://*)
-      str="`echo "$1" | sed -n "s,^youtube://\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?$,video='\1' quality='\3',p"`"
+      str="`echo "$1" | sed -n '
+        \,^https\?://.*?.*\<v=\([a-zA-Z0-9_-]\{11\}\)\(&.*\)\?$,{s,,video='"'"'\1'"'"',p;Q0};
+        \,^youtube://\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?$,{s,,video='"'"'\1'"'"' quality='"'"'\3'"'"',p;Q0};
+        Q1
+      '`"
       if [[ $? -ne 0 || -z "$str" ]]
       then
         echo 1>&2 "invalid url: $1"
