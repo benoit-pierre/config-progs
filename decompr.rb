@@ -24,6 +24,7 @@ ARCHIVE_TYPES = {
   'application/x-gzip' => 'tgz',
   'application/x-lha' => 'lzh',
   'application/x-rar' => 'rar',
+  'application/x-tar' => 'tar',
   'application/x-xz' => 'tbxz',
   'application/zip' => 'zip',
 }
