@@ -208,6 +208,16 @@ while args.size > 0
 
     ext = guess_archive_type(arg)
 
+    unless ext
+      rev_arg = arg.reverse
+      extensions.keys.each do |supported_ext|
+        if rev_arg.start_with?(supported_ext.reverse + '.')
+          ext = supported_ext
+          break
+        end
+      end
+    end
+
     archiver = extensions.fetch(ext)
 
     archive = File.expand_path(arg)
