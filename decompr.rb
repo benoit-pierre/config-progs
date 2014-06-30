@@ -32,7 +32,7 @@ ARCHIVE_TYPES = {
 
 def guess_archive_type(file)
 
-  IO.popen(['file', '--mime-type', '--brief', file]) do |io|
+  IO.popen(['file', '--dereference', '--mime-type', '--brief', file]) do |io|
 
     mime = io.read
     mime.chomp!
