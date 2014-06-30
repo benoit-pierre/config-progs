@@ -80,6 +80,7 @@ rar.cmd = 'unrar'
 svz.cmd = '7z'
 
 zip.cmd = 'unzip'
+zip.extensions += ['jar', 'xpi']
 
 lha.cmd = 'lha'
 
