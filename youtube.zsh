@@ -3,7 +3,8 @@
 dry_run=0
 quality='720p'
 verbose=0
-player='youtube_mpv'
+player='mp-play'
+cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/youtube"
 
 cmd_run()
 {
@@ -64,13 +65,42 @@ player_youtube-viewer()
   cmd_run youtube-viewer -q "-$quality" -id="$video" --std-input=':q'
 }
 
-player_youtube_mpv()
+player_mpv()
 {
+  if [[ "$1" = "--mp-play" ]]
+  then
+    mp_play=1
+    shift
+  else
+    mp_play=0
+  fi
+
   quality="$1"
   video="$2"
+  cache="$cache_dir/$2"
+  mpv_opts=(--quvi-format="$quality" --cache-file="$cache")
 
-  cmd_run mp-play --player=mpv --profile='youtube' --option=--quvi-format="$quality" "http://www.youtube.com/watch?v=$video"
+  if [[ 0 -eq $mp_play ]]
+  then
+    cmd=(mpv --profile='youtube' "${(@)mpv_opts}")
+  else
+    cmd=(mp-play --player=mpv "${(@)mpv_opts/#/--option=}")
+  fi
+  cmd+=(--profile='youtube' "http://www.youtube.com/watch?v=$video")
+
+  trap '' SIGINT
+  cmd_run mkdir -p "$cache_dir"
+  cmd_run "${(@)cmd}"
+  cmd_run rm -f "$cache"
 }
+
+if [[ -x =mpv ]] 2>/dev/null
+then
+  player_mp-play()
+  {
+    player_mpv --mp-play "$@"
+  }
+fi
 
 while [ -n "$1" ]
 do
