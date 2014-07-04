@@ -427,6 +427,8 @@ class Whelp:
 
     def cmd_cd(self, dir=None):
         ''' Change directory (relative to current prefix if not absolute). '''
+        if dir is not None and '.' == dir:
+            dir = os.environ['PWD']
         self._dir = self._wine.get_dir(dir)
         if self._dry_run:
             return
