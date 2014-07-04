@@ -40,7 +40,7 @@ player_smplayer()
   cmd_run smplayer -close-at-end "http://youtu.be/$video${quality+?vq=$quality}"
 }
 
-player_youtube_viewer()
+player_youtube-viewer()
 {
   case "$1" in
     240p)
@@ -61,7 +61,7 @@ player_youtube_viewer()
   esac
   video="$2"
 
-  cmd_run youtube-viewer --mplayer='mp-play' --append-mplayer='--player=mplayer --' "-$quality" -I -q -id="$video"
+  cmd_run youtube-viewer -q "-$quality" -id="$video" --std-input=':q'
 }
 
 player_youtube_mpv()
