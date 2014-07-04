@@ -543,7 +543,7 @@ exec 'Program Files/Steam/steam.exe' # -applaunch 0000
             if os.path.exists(reg_steam):
                 self.cmd_exec('regedit', reg_steam)
 
-        tricks = ['gecko', 'nocrashdialog']
+        tricks = ['nocrashdialog']
         if options.directx:
             tricks.extend(['d3dx9', 'd3dcompiler_43'])
         if options.steam:
