@@ -34,6 +34,11 @@ class Player:
         'subdownloader',
     )
 
+    _SUBEXTS = set((
+        '.srt',
+        '.sub',
+    ))
+
     @staticmethod
     def from_name(name, options):
         klass = Player._klasses[name]
@@ -91,7 +96,7 @@ class Player:
         file_name, file_ext = os.path.splitext(os.path.basename(file))
         for entry in os.listdir(os.path.dirname(os.path.abspath(file))):
             name, ext = os.path.splitext(entry)
-            if '.srt' != ext.lower():
+            if ext.lower() not in self._SUBEXTS:
                 continue
             if name.lower() == file_name.lower():
                 return True
