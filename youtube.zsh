@@ -10,7 +10,7 @@ cmd_run()
   if [[ 1 -eq $dry_run || 1 -eq $verbose ]]
   then
     echo "$@"
-    [[ 1 -eq $dry_run ]] && exit
+    [[ 1 -eq $dry_run ]] && return
   fi
 
   "$@"
