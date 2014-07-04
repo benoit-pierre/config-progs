@@ -268,7 +268,7 @@ class MPV(Player):
         if self._options.profile is not None:
             cmd.append('--profile=%s' % self._options.profile)
         if not sys.stdout.isatty():
-            cmd.append('--msglevel=cache=warn:statusline=warn')
+            cmd.append('--msg-level=cache=warn:statusline=warn')
         if self._options.verbose:
             cmd.append('-v')
         cmd.append('--input-file=%s' % self._input_file)
