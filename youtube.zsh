@@ -77,8 +77,8 @@ player_mpv()
 
   quality="$1"
   video="$2"
-  cache="$cache_dir/$2"
-  mpv_opts=(--quvi-format="$quality" --cache-file="$cache")
+  cache="$cache_dir/$video"
+  cookies="$cache_dir/$video.cookies"
   mpv_opts=(--cache-file="$cache")
 
   if [[ 0 -eq $mp_play ]]
@@ -87,12 +87,13 @@ player_mpv()
   else
     cmd=(mp-play --player=mpv "${(@)mpv_opts/#/--option=}")
   fi
-  cmd+=(--profile='youtube' "http://www.youtube.com/watch?v=$video")
+  cmd+=(--profile='youtube')
 
   trap '' SIGINT
   cmd_run mkdir -p "$cache_dir"
-  cmd_run "${(@)cmd}"
-  cmd_run rm -f "$cache"
+  cmd_run eval "video_url=\"\$(youtube-dl --cookies=$cookies --max-quality=$quality --get-url 'http://www.youtube.com/watch?v=$video')\""
+  cmd_run "${(@)cmd}" "$video_url"
+  cmd_run rm -f "$cache" "$cookies"
 }
 
 if [[ -x =mpv ]] 2>/dev/null
