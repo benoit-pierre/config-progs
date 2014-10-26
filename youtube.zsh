@@ -79,6 +79,7 @@ player_mpv()
   video="$2"
   cache="$cache_dir/$2"
   mpv_opts=(--quvi-format="$quality" --cache-file="$cache")
+  mpv_opts=(--cache-file="$cache")
 
   if [[ 0 -eq $mp_play ]]
   then
