@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 dry_run=0
-quality='720p'
+quality='1080p'
 verbose=0
 player='mp-play'
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/youtube"
