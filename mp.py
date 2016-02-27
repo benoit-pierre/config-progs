@@ -227,6 +227,9 @@ class Player:
 
             return status >> 8
 
+        except KeyboardInterrupt:
+            pass
+
         finally:
             for fn in cleanup:
                 fn()
