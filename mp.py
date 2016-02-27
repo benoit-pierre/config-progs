@@ -88,6 +88,8 @@ class Player:
         for path in self._options.fetch_subtitles:
             if '/' != path[-1]:
                 path += '/'
+            if '!' == path[0] and directory.startswith(path[1:]):
+                return False
             if directory.startswith(path):
                 return True
         return False
