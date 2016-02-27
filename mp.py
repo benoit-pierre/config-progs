@@ -5,6 +5,7 @@ import ConfigParser as configparser
 import subprocess
 import mimetypes
 import argparse
+import shlex
 import sys
 import os
 
@@ -373,7 +374,7 @@ if os.path.exists(config_file):
                 if v is None:
                     args.append(opt_name)
                     continue
-                for opt_val in v.split():
+                for opt_val in shlex.split(v, comments=True):
                     args.append('%s=%s' % (opt_name, opt_val))
 
 args.extend(sys.argv[1:])
