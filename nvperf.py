@@ -7,7 +7,7 @@ import subprocess
 
 
 NVPERF_FILE = '/tmp/nvperf'
-NVPERF_LEVELS = [ 'adaptive', 'maximum' ]
+NVPERF_LEVELS = ['adaptive', 'maximum']
 
 
 def nvperf(mode, verbose=False):
@@ -20,7 +20,7 @@ def nvperf(mode, verbose=False):
         counter = int(b'0' + state_file.read())
 
         if mode in ('?', 'query', None):
-            if 0 == counter:
+            if counter == 0:
                 level = NVPERF_LEVELS[0]
             else:
                 level = NVPERF_LEVELS[1]
@@ -41,10 +41,10 @@ def nvperf(mode, verbose=False):
             # No change in level needed
             return
 
-        if 1 == new_counter and 0 == counter:
+        if new_counter == 1 and counter == 0:
             # Switch to maximum level.
             new_level = 1
-        elif 0 == new_counter:
+        elif new_counter == 0:
             # Switch to adaptive level.
             new_level = 0
         else:
@@ -69,7 +69,7 @@ def nvperf(mode, verbose=False):
         state_file.close()
 
 
-if '__main__' == __name__:
+if __name__ == '__main__':
 
     import argparse
 
@@ -85,4 +85,3 @@ if '__main__' == __name__:
     options = parser.parse_args()
 
     nvperf(options.mode, verbose=options.verbose)
-
