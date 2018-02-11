@@ -1,13 +1,13 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-
-import ConfigParser as configparser
-import subprocess
-import mimetypes
+import configparser
 import argparse
-import shlex
-import sys
+import mimetypes
 import os
+import shlex
+import subprocess
+import sys
+import textwrap
 
 
 MP_PROG = os.path.basename(sys.argv[0])
@@ -15,7 +15,7 @@ MP_DIR = '%s/mp' % os.environ.get('XDG_CONFIG_HOME', os.path.expanduser('~/.conf
 
 
 def msg(msg):
-    print >>sys.stderr, msg
+    print(msg, file=sys.stderr)
 
 def dbg(what, value):
     msg('%s: %s' % (what, value))
@@ -62,9 +62,17 @@ class Player:
         return '%s/input-%u' % (MP_DIR, pid)
 
     def _get_play_cmd(self):
-        return [ 'python2', '-c',
-                'import sys; input = open(sys.argv[1], "r+");\nwhile True:\n sys.stdout.write(input.readline())',
-                self._input_file ]
+        return [
+            sys.executable, '-c',
+            textwrap.dedent(
+                '''
+                import sys
+                input = open(sys.argv[1], "r+")
+                while True:
+                    sys.stdout.write(input.readline())
+                '''),
+            self._input_file,
+        ]
 
     def _nvperf(self, mode):
         from nvperf import nvperf
@@ -116,7 +124,7 @@ class Player:
             stderr = subprocess.STDOUT
         try:
             return subprocess.call(cmd, stdout=stdout, stderr=stderr)
-        except OSError, e:
+        except OSError as e:
             if self._options.debug:
                 dbg('exception', e)
             return -1
@@ -323,7 +331,7 @@ parser.add_argument('-d', '--debug',
 if 'mp-play' == MP_PROG:
 
     parser.add_argument('-p', '--player',
-                        choices=Player._klasses.keys(), default='mpv',
+                        choices=list(Player._klasses.keys()), default='mpv',
                         help='select player to use')
     parser.add_argument('--fetch-subtitles',
                         metavar='LOCATION', action='append', default=[],
@@ -357,7 +365,7 @@ elif 'mp-control' == MP_PROG:
     parser.add_argument('cmd', choices=['pause', 'resume', 'show-progress'], help='command to send to player')
 
 else:
-    print >>sys.stderr, 'invalid mode: %s' % MP_PROG
+    print('invalid mode: %s' % MP_PROG, file=sys.stderr)
     sys.exit(1)
 
 
