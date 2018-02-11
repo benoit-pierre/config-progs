@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 
+__requires__ = '''
+xattr >= 0.9.3
+'''
+
 import argparse
 import configparser
 import mimetypes
 import os
+import re
 import shlex
 import subprocess
 import sys
 import textwrap
+
+from xattr import xattr
 
 
 MP_PROG = os.path.basename(sys.argv[0])
@@ -23,6 +30,48 @@ def dbg(what, value):
 def unlink_if_exists(file):
     if os.path.exists(file):
         os.unlink(file)
+
+
+class LoudnessDatabase(object):
+
+    FATTR = 'user.loudness'
+    NULL = open(os.devnull, 'r+b')
+
+    def __init__(self, midvol, maxvol):
+        self._midvol = float(midvol)
+        self._maxvol = float(maxvol)
+
+    def get_loudness(self, path):
+        fattrs = xattr(path)
+        if self.FATTR in fattrs:
+            lufs, peak = [float(v) for v in fattrs[self.FATTR].split()]
+            return lufs, peak
+        lufs, peak = self._calculate_loudness(path)
+        if lufs is None:
+            return None, None
+        value = b'%f %f' % (lufs, peak)
+        fattrs[self.FATTR] = value
+        return lufs, peak
+
+    def get_volume(self, path):
+        lufs, peak = self.get_loudness(path)
+        if lufs is None:
+            return None
+        return 100 * 10 ** ((self._midvol + min(self._maxvol-lufs, -peak)) / 60)
+
+    def _calculate_loudness(self, path):
+        output = subprocess.check_output(
+            'loudness --force-plugin=ffmpeg scan -p dbtp'.split() +
+            [path], stderr=self.NULL,
+        )
+        last_line = output.decode().strip().split('\n')[-1]
+        m = re.match(r'^\s*(-?[0-9.]+) LUFS,\s*(-?[0-9.]+) dBTP$', last_line)
+        if m is None:
+            if re.match(r'\s*-inf LUFS,\s*-inf dBTP$', last_line) is not None:
+                return 0, 0
+            return None, None
+        lufs, peak = float(m.group(1)), float(m.group(2))
+        return lufs, peak
 
 
 class Player:
@@ -200,7 +249,33 @@ class Player:
                 if self._options.debug or self._options.verbose:
                     msg('no subtitles were found')
 
+    def _calculate_volume(self):
+        database_path = os.path.join(MP_DIR, 'loudness.db')
+        db = LoudnessDatabase(-23, -13)
+        min_volume = None
+        for fname in self._options.files:
+            if not os.path.isfile(fname):
+                continue
+            if self._options.debug or self._options.verbose:
+                msg('calculating volume for %s' % fname)
+            volume = db.get_volume(fname)
+            if volume is None:
+                continue
+            if min_volume is None or min_volume > volume:
+                min_volume = volume
+        if min_volume is None:
+            min_volume = 35
+        else:
+            min_volume = min(min_volume, 65)
+        volume = int(round(min_volume))
+        return volume
+
     def play(self):
+
+        if not self._options.no_calculate_volume:
+            self._volume = self._calculate_volume()
+        else:
+            self._volume = None
 
         if not self._options.no_fetch_subtitles:
             self._fetch_subtitles()
@@ -289,6 +364,8 @@ class MPV(Player):
             cmd.append('--msg-level=cache=warn:statusline=warn')
         if self._options.verbose:
             cmd.append('-v')
+        if self._volume is not None:
+            cmd.append('--volume=%u' % self._volume)
         cmd.append('--input-file=%s' % self._input_file)
         return cmd
 
@@ -314,6 +391,8 @@ class MPlayer(Player):
             cmd.extend(['-msglevel', 'cache=3:statusline=3'])
         if self._options.verbose:
             cmd.append('-v')
+        if self._volume is not None:
+            cmd.append('-volume=%u' % self._volume)
         cmd.extend(['-input', 'file=%s' % self._input_file])
         return cmd
 
@@ -340,6 +419,9 @@ if MP_PROG == 'mp-play':
     parser.add_argument('--no-fetch-subtitles',
                         action='store_true', default=False,
                         help='disable automatically fetching subtitles')
+    parser.add_argument('--no-calculate-volume',
+                        action='store_true', default=False,
+                        help='disable appropriate volume calculation')
     parser.add_argument('--no-play',
                         action='store_true', default=False,
                         help='do not play video')
