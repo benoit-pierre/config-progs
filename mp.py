@@ -58,7 +58,8 @@ class Player:
         self._options = options
         self._dev_null = open('/dev/null', 'w')
 
-    def _get_input_file(self, pid):
+    @staticmethod
+    def _get_input_file(pid):
         return '%s/input-%u' % (MP_DIR, pid)
 
     def _get_play_cmd(self):
@@ -80,23 +81,24 @@ class Player:
             dbg('nvperf', mode)
         nvperf(mode, verbose=self._options.verbose)
 
-    def _is_video(self, file):
+    @staticmethod
+    def _is_video(fp):
         ''' Check if file is a video file. '''
         mimetypes.init()
-        type, encoding = mimetypes.guess_type(file)
-        if type is None:
+        mtype, __ = mimetypes.guess_type(fp)
+        if mtype is None:
             return False
-        return type.startswith('video/')
+        return mtype.startswith('video/')
 
     def _need_subtitles(self, file):
         ''' Do we need subtitles for this file? '''
         directory = os.path.dirname(os.path.realpath(file))
-        if '/' != directory[-1]:
+        if directory[-1] != '/':
             directory += '/'
         for path in self._options.fetch_subtitles:
-            if '/' != path[-1]:
+            if path[-1] != '/':
                 path += '/'
-            if '!' == path[0] and directory.startswith(path[1:]):
+            if path[0] == '!' and directory.startswith(path[1:]):
                 return False
             if directory.startswith(path):
                 return True
@@ -104,7 +106,7 @@ class Player:
 
     def _has_subtitles(self, file):
         ''' Check if subtitles for the specified file exists. '''
-        file_name, file_ext = os.path.splitext(os.path.basename(file))
+        file_name, __ = os.path.splitext(os.path.basename(file))
         for entry in os.listdir(os.path.dirname(os.path.abspath(file))):
             name, ext = os.path.splitext(entry)
             if ext.lower() not in self._SUBEXTS:
@@ -136,7 +138,7 @@ class Player:
             '--quiet',
             file,
         ]
-        return 0 == self._call_subtitles_downloader(cmd)
+        return self._call_subtitles_downloader(cmd) == 0
 
     def _fetch_subtitles_subberthehut(self, file):
         cmd = [
@@ -148,7 +150,7 @@ class Player:
             '--quiet',
             file,
         ]
-        return 0 == self._call_subtitles_downloader(cmd)
+        return self._call_subtitles_downloader(cmd) == 0
 
     def _fetch_subtitles_subdownloader(self, file):
         cmd = [
@@ -158,7 +160,7 @@ class Player:
             '--rename-subs',
             '--cli', '-D',
         ]
-        if 0 != self._call_subtitles_downloader(cmd):
+        if self._call_subtitles_downloader(cmd) != 0:
             return False
         # Need to check ourself if subtitles were found since subdownloader
         # error code does not indicate it.
@@ -166,7 +168,7 @@ class Player:
 
     def _fetch_subtitles(self):
 
-        if 0 == len(self._options.fetch_subtitles):
+        if not self._options.fetch_subtitles:
             return
 
         mimetypes.init()
@@ -204,7 +206,7 @@ class Player:
             self._fetch_subtitles()
 
         if self._options.only_fetch_subtitles:
-            return
+            return 0
 
         cleanup = []
 
@@ -215,7 +217,7 @@ class Player:
                 cleanup.append(lambda: self._nvperf('-'))
 
             mp_pid = os.fork()
-            if 0 == mp_pid:
+            if mp_pid == 0:
 
                 self._input_file = self._get_input_file(os.getpid())
                 if not os.path.exists(MP_DIR):
@@ -237,7 +239,7 @@ class Player:
 
             self._input_file = self._get_input_file(mp_pid)
             cleanup.append(lambda: unlink_if_exists(self._input_file))
-            pid, status = os.waitpid(mp_pid, 0)
+            __, status = os.waitpid(mp_pid, 0)
 
             return status >> 8
 
@@ -263,9 +265,8 @@ class Player:
         if self._options.debug:
             dbg('cmd', cmd)
 
-        input = open(input_file, 'w')
-        input.write(cmd + '\n')
-        input.close()
+        with open(input_file, 'w') as fp:
+            fp.write(cmd + '\n')
 
         return 0
 
@@ -281,7 +282,7 @@ class MPV(Player):
     }
 
     def _get_play_cmd(self):
-        cmd = [ 'mpv' ]
+        cmd = ['mpv']
         if self._options.profile is not None:
             cmd.append('--profile=%s' % self._options.profile)
         if not sys.stdout.isatty():
@@ -306,7 +307,7 @@ class MPlayer(Player):
     }
 
     def _get_play_cmd(self):
-        cmd = [ 'mplayer' ]
+        cmd = ['mplayer']
         if self._options.profile is not None:
             cmd.extend(['-profile', self._options.profile])
         if not sys.stdout.isatty():
@@ -328,7 +329,7 @@ parser.add_argument('-d', '--debug',
                     action='store_true', default=False,
                     help='enable debug traces')
 
-if 'mp-play' == MP_PROG:
+if MP_PROG == 'mp-play':
 
     parser.add_argument('-p', '--player',
                         choices=list(Player._klasses.keys()), default='mpv',
@@ -359,10 +360,11 @@ if 'mp-play' == MP_PROG:
 
     parser.add_argument('files', nargs='+')
 
-elif 'mp-control' == MP_PROG:
+elif MP_PROG == 'mp-control':
 
     parser.add_argument('pid', type=int, help='PID of the player to control')
-    parser.add_argument('cmd', choices=['pause', 'resume', 'show-progress'], help='command to send to player')
+    parser.add_argument('cmd', choices=['pause', 'resume', 'show-progress'],
+                        help='command to send to player')
 
 else:
     print('invalid mode: %s' % MP_PROG, file=sys.stderr)
@@ -395,12 +397,11 @@ if options.debug:
     dbg('args', args)
     dbg('options', options)
 
-if 'mp-play' == MP_PROG:
+if MP_PROG == 'mp-play':
     player = Player.from_name(options.player, options)
     ret = player.play()
-elif 'mp-control' == MP_PROG:
+elif MP_PROG == 'mp-control':
     player = Player.from_pid(options.pid, options)
     ret = player.control()
 
 sys.exit(ret)
-
