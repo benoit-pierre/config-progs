@@ -205,7 +205,7 @@ class Player:
         if not self._options.no_fetch_subtitles:
             self._fetch_subtitles()
 
-        if self._options.only_fetch_subtitles:
+        if self._options.no_play:
             return 0
 
         cleanup = []
@@ -340,9 +340,9 @@ if MP_PROG == 'mp-play':
     parser.add_argument('--no-fetch-subtitles',
                         action='store_true', default=False,
                         help='disable automatically fetching subtitles')
-    parser.add_argument('--only-fetch-subtitles',
+    parser.add_argument('--no-play',
                         action='store_true', default=False,
-                        help='only automatically fetch subtitles')
+                        help='do not play video')
     parser.add_argument('--subtitles-language',
                         metavar='LANGUAGE', default='en',
                         help='language to use when fetching subtitles')
