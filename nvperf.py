@@ -1,8 +1,9 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 
 import fcntl
 import os
+import subprocess
 
 
 NVPERF_FILE = '/tmp/nvperf'
@@ -11,19 +12,19 @@ NVPERF_LEVELS = [ 'adaptive', 'maximum' ]
 
 def nvperf(mode, verbose=False):
 
-    state_file = open(NVPERF_FILE, 'a+')
+    state_file = os.fdopen(os.open(NVPERF_FILE, os.O_RDWR | os.O_CREAT), 'rb+')
     fcntl.flock(state_file, fcntl.LOCK_EX)
 
     try:
 
-        counter = int('0' + state_file.read())
+        counter = int(b'0' + state_file.read())
 
         if mode in ('?', 'query', None):
             if 0 == counter:
                 level = NVPERF_LEVELS[0]
             else:
                 level = NVPERF_LEVELS[1]
-            print level
+            print(level)
             return
 
         if mode in ('-', 'off', 'adapt'):
@@ -54,12 +55,13 @@ def nvperf(mode, verbose=False):
 
             if verbose:
                 level = NVPERF_LEVELS[new_level]
-                print 'switching powermizer performance level to %s' % level
+                print('switching powermizer performance level to %s' % level)
 
-            os.system('nvidia-settings -a GPUPowerMizerMode=%u >/dev/null' % new_level)
+            subprocess.check_call(('nvidia-settings', '-a', 'GPUPowerMizerMode=%u' % new_level))
 
-        os.ftruncate(state_file.fileno(), 0)
-        state_file.write('%u' % new_counter)
+        state_file.seek(0)
+        state_file.write(b'%u' % new_counter)
+        os.truncate(state_file.fileno(), state_file.tell())
 
     finally:
 
