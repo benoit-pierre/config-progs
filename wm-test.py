@@ -108,6 +108,7 @@ if 0 == xephyr_pid:
         '+xinerama',
         '-ac',
         '-noreset',
+        '-resizeable',
         '-extension', 'GLX',
     ]
     screens = display_geometry_to_screens(*options.geometry)
