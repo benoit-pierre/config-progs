@@ -7,6 +7,7 @@ xattr >= 0.9.3
 
 import argparse
 import configparser
+import json
 import mimetypes
 import os
 import re
@@ -160,12 +161,30 @@ class Player:
 
     def _has_subtitles(self, file):
         ''' Check if subtitles for the specified file exists. '''
+        # First, check for an external corresponding subtitle file.
         file_name, __ = os.path.splitext(os.path.basename(file))
         for entry in os.listdir(os.path.dirname(os.path.abspath(file))):
             name, ext = os.path.splitext(entry)
             if ext.lower() not in self._SUBEXTS:
                 continue
             if name.lower() == file_name.lower():
+                return True
+        # Otherwise, use ffprobe to check for embedded subtitle streams.
+        try:
+            info = json.loads(subprocess.run((
+                'ffprobe', '-loglevel', 'warning',
+                '-show_streams', '-print_format', 'json', file,
+            ), stdout=subprocess.PIPE).stdout)
+        except Exception as e:
+            msg(e)
+            return False
+        for stream in info.get('streams', ()):
+            if stream.get('codec_type') != 'subtitle':
+                continue
+            tags = stream.get('tags', {})
+            if self._options.subtitles_language.alpha_3 == (
+                tags.get('language') or tags.get('LANGUAGE')
+            ):
                 return True
         return False
 
