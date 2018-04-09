@@ -87,6 +87,7 @@ class Player:
     _SUBDOWNLOADERS = (
         'periscope',
         'subberthehut',
+        'subdl',
         'subdownloader',
     )
 
@@ -221,6 +222,14 @@ class Player:
             '--never-ask',
             '--same-name',
             '--quiet',
+            file,
+        ]
+        return self._call_subtitles_downloader(cmd) == 0
+
+    def _fetch_subtitles_subdl(self, file):
+        cmd = [
+            'subdl',
+            '--lang', self._options.subtitles_language.alpha_3,
             file,
         ]
         return self._call_subtitles_downloader(cmd) == 0
