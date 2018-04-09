@@ -27,6 +27,9 @@ def msg(msg):
 def dbg(what, value):
     msg('%s: %s' % (what, value))
 
+def dbg_cmd(cmd):
+    dbg('cmd', ' '.join(shlex.quote(a) for a in cmd))
+
 def unlink_if_exists(file):
     if os.path.exists(file):
         os.unlink(file)
@@ -166,7 +169,7 @@ class Player:
 
     def _call_subtitles_downloader(self, cmd):
         if self._options.debug:
-            dbg('cmd', cmd)
+            dbg_cmd(cmd)
         if self._options.debug:
             stdout = sys.stdout
             stderr = sys.stderr
@@ -307,7 +310,7 @@ class Player:
                 cmd.extend(self._options.files)
 
                 if self._options.debug:
-                    dbg('cmd', cmd)
+                    dbg_cmd(cmd)
 
                 os.execlp(*cmd)
                 sys.exit(1)
@@ -338,7 +341,7 @@ class Player:
         cmd = self._get_control_cmd()
 
         if self._options.debug:
-            dbg('cmd', cmd)
+            dbg_cmd(cmd)
 
         with open(input_file, 'w') as fp:
             fp.write(cmd + '\n')
