@@ -41,6 +41,17 @@ player_smplayer()
   cmd_run smplayer -close-at-end "http://youtu.be/$video${quality+?vq=$quality}"
 }
 
+player_youtube-dl()
+{
+  cachedir="${XDG_CACHE_HOME:-$HOME/.cache}/youtube"
+  mkdir -p "$cachedir"
+  tmpdir="$(mktemp -p "$cachedir" -d -t yt.XXXXXXXXXX)"
+  trap "rm -rf ${(Q)tmpdir}" EXIT
+  cmd_run youtube-dl --all-subs --embed-subs --add-metadata --merge-output-format=mkv --output="$tmpdir/%(title)s-%(id)s.%(ext)s" --external-downloader aria2c --external-downloader-args "-x 16 -s 16 -k 1M" --quiet -- "$2"
+  find "$tmpdir" -maxdepth 1 -type f -name '*.mkv' -print0 |
+  xargs -0 --no-run-if-empty mp-play --no-fetch-subtitles --option=--keep-open
+}
+
 player_youtube-viewer()
 {
   case "$1" in
