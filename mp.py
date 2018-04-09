@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 __requires__ = '''
+pycountry >= 18.2.23
 xattr >= 0.9.3
 '''
 
@@ -14,6 +15,7 @@ import subprocess
 import sys
 import textwrap
 
+from pycountry import languages
 from xattr import xattr
 
 
@@ -186,7 +188,7 @@ class Player:
     def _fetch_subtitles_periscope(self, file):
         cmd = [
             'periscope',
-            '--language', self._options.subtitles_language,
+            '--language', self._options.subtitles_language.alpha_2,
             '--quiet',
             file,
         ]
@@ -195,7 +197,7 @@ class Player:
     def _fetch_subtitles_subberthehut(self, file):
         cmd = [
             'subberthehut',
-            '--lang', self._options.subtitles_language,
+            '--lang', self._options.subtitles_language.alpha_3,
             '--hash-search-only',
             '--never-ask',
             '--same-name',
@@ -207,7 +209,7 @@ class Player:
     def _fetch_subtitles_subdownloader(self, file):
         cmd = [
             'subdownloader',
-            '--lang', self._options.subtitles_language,
+            '--lang', self._options.subtitles_language.alpha_3,
             '--video', os.path.abspath(file),
             '--rename-subs',
             '--cli', '-D',
@@ -405,6 +407,17 @@ class MPlayer(Player):
 Player._klasses['mplayer'] = MPlayer
 
 
+def language(v):
+    if isinstance(v, languages.data_class_base):
+        return v
+    for k in 'name alpha_3 alpha_2'.split():
+        try:
+            return languages.get(**{k: v})
+        except KeyError:
+            pass
+    raise ValueError('invalid language: %r' % v)
+
+
 parser = argparse.ArgumentParser(prog=MP_PROG)
 
 parser.add_argument('-d', '--debug',
@@ -429,7 +442,7 @@ if MP_PROG == 'mp-play':
                         action='store_true', default=False,
                         help='do not play video')
     parser.add_argument('--subtitles-language',
-                        metavar='LANGUAGE', default='en',
+                        metavar='LANGUAGE', default='en', type=language,
                         help='language to use when fetching subtitles')
     parser.add_argument('--use-nvperf',
                         action='store_true', default=False,
