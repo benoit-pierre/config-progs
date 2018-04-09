@@ -104,9 +104,11 @@ if 0 == xephyr_pid:
     signal.signal(signal.SIGUSR1, signal.SIG_IGN)
     xephyr_cmd = [
         'Xephyr', 'Xephyr',
-        '-ac', xephyr_display,
+        xephyr_display,
         '+xinerama',
-        '-noreset'
+        '-ac',
+        '-noreset',
+        '-extension', 'GLX',
     ]
     screens = display_geometry_to_screens(*options.geometry)
     for x, y, w, h in screens:
