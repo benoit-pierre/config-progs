@@ -109,8 +109,6 @@ fi
 
 while [ -n "$1" ]
 do
-  video=''
-
   case "$1" in
     -d)
       set -x
@@ -129,9 +127,31 @@ do
     -v)
       verbose=1
       ;;
+    --)
+      shift
+      break
+      ;;
     -*)
       echo 1>&2 "invalid option: $1"
       exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+  shift
+done
+
+while [ -n "$1" ]
+do
+  video=''
+
+  case "$1" in
+    youtube.com/*)
+      # Fallthrough...
+      ;&
+    https://player.vimeo.com/*)
+      video="$1"
       ;;
     http://*)
       # Fallthrough...
@@ -143,6 +163,7 @@ do
       str="`echo "$1" | sed -n '
         s,#t=\([0-9]\+\)$,,;
         s,^youtube://,,;
+        \,^youtube.com/watch?v=\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?$,{s,,video='"'"'\1'"'"' quality='"'"'\3'"'"',;s, quality='"''"',,;p;Q0};
         \,^https\?://www.youtube.com/embed/\([a-zA-Z0-9_-]\{11\}\)$,{s,,video='"'"'\1'"'"',p;Q0};
         \,^https\?://youtu\.be/\([a-zA-Z0-9_-]\{11\}\)$,{s,,video='"'"'\1'"'"',p;Q0};
         \,^https\?://.*[?&]\<v=\([a-zA-Z0-9_-]\{11\}\)\(&.*\)\?$,{s,,video='"'"'\1'"'"',p;Q0};
