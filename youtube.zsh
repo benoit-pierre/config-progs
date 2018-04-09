@@ -3,7 +3,7 @@
 dry_run=0
 quality='1080p'
 verbose=0
-player='mp-play'
+player='youtube-dl'
 cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/youtube"
 
 cmd_run()
