@@ -174,9 +174,9 @@ do
       str="`echo "$1" | sed -n '
         s,#t=\([0-9]\+\)$,,;
         s,^youtube://,,;
-        \,^youtube.com/watch?v=\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?$,{s,,video='"'"'\1'"'"' quality='"'"'\3'"'"',;s, quality='"''"',,;p;Q0};
-        \,^https\?://www.youtube.com/embed/\([a-zA-Z0-9_-]\{11\}\)$,{s,,video='"'"'\1'"'"',p;Q0};
-        \,^https\?://youtu\.be/\([a-zA-Z0-9_-]\{11\}\)$,{s,,video='"'"'\1'"'"',p;Q0};
+        \,^youtube.com/watch?v=\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?\(?.*\)\?$,{s,,video='"'"'\1'"'"' quality='"'"'\3'"'"',;s, quality='"''"',,;p;Q0};
+        \,^https\?://www.youtube.com/embed/\([a-zA-Z0-9_-]\{11\}\)\(?.*\)\?$,{s,,video='"'"'\1'"'"',p;Q0};
+        \,^https\?://youtu\.be/\([a-zA-Z0-9_-]\{11\}\)\(?.*\)\?$,{s,,video='"'"'\1'"'"',p;Q0};
         \,^https\?://.*[?&]\<v=\([a-zA-Z0-9_-]\{11\}\)\(&.*\)\?$,{s,,video='"'"'\1'"'"',p;Q0};
         \,^\([a-zA-Z0-9_-]\{11\}\)\(?q=\([a-z0-9]\+\)\)\?$,{s,,video='"'"'\1'"'"' quality='"'"'\3'"'"',;s, quality='"''"',,;p;Q0};
         Q1
