@@ -390,7 +390,7 @@ class MPV(Player):
     }
 
     def _get_play_cmd(self):
-        cmd = ['mpv']
+        cmd = ['mpv', '--pause']
         if self._options.profile is not None:
             cmd.append('--profile=%s' % self._options.profile)
         if not sys.stdout.isatty():
