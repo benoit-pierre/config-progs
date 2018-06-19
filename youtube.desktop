@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Youtube
+Comment=Watch a Youtube video
+Exec=youtube %u
+MimeType=x-scheme-handler/youtube;
+Icon=youtube
+Terminal=false
+StartupNotify=false
+Categories=AudioVideo;Player;Video;
