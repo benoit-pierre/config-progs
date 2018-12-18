@@ -444,9 +444,12 @@ def language(v):
         return v
     for k in 'name alpha_3 alpha_2'.split():
         try:
-            return languages.get(**{k: v})
+            r = languages.get(**{k: v})
         except KeyError:
             pass
+        else:
+            if r is not None:
+                return r
     raise ValueError('invalid language: %r' % v)
 
 
