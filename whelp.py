@@ -349,14 +349,14 @@ class Whelp:
         cmd = None
 
         if options.kill:
-            cmd = ('wineserver', '-k')
+            cmd = ['wineserver', '-k']
 
         if options.execute:
             cmd = options.execute
 
         if cmd is not None:
             try:
-                self.cmd_exec(cmd[0], *cmd[1:])
+                self.cmd_exec(cmd[0], *(cmd[1:] + args))
             except Exception, e:
                 print >>sys.stderr, e
                 return 1
