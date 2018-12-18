@@ -10,6 +10,7 @@ import configparser
 import json
 import mimetypes
 import os
+import pprint
 import re
 import shlex
 import subprocess
@@ -179,7 +180,10 @@ class Player:
         except Exception as e:
             msg(e)
             return False
-        for stream in info.get('streams', ()):
+        file_streams = info.get('streams', ())
+        if self._options.debug:
+            dbg('streams', pprint.pformat(file_streams))
+        for stream in file_streams:
             if stream.get('codec_type') != 'subtitle':
                 continue
             tags = stream.get('tags', {})
